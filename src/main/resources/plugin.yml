@@ -1,0 +1,8 @@
+name: SurfDeathmessage
+description: Custom Death Messages
+main: dev.slne.deathmessage.Main
+version: ${project.version}
+authors: [Keviro]
+api-version: 1.16
+depend: [CommandAPI]
+folia-supported: true
