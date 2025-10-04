@@ -276,6 +276,11 @@ object DeathMessageProvider {
                 appendDeathPrefix()
                 variableValue("<player>")
                 spacer(" wurde vom EnderDragon getötet!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(playerPlaceHolder)
+                spacer(" dachte, er könnte auf einem Drachen fliegen")
             }
         ),
         Player::class to listOf(
