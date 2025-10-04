@@ -44,7 +44,7 @@ object DeathMessageProvider {
             buildText {
                 appendDeathPrefix()
                 variableValue("<player>")
-                spacer(" hat sich an einer Rüstung zu Tode gepieckst!")
+                spacer(" hat sich an einer Rüstung zu Tode gepikst!")
             }
         ),
         DamageCause.SUICIDE to listOf(
