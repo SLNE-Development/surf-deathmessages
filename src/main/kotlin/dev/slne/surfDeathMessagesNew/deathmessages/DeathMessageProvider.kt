@@ -282,7 +282,9 @@ object DeathMessageProvider {
             buildText {
                 appendDeathPrefix()
                 variableValue("<player>")
-                spacer(" wurde von <killer> ermordet!")
+                spacer(" wurde von ")
+                variableValue("<killer>")
+                spacer(" ermordet!")
             }
         ),
         Skeleton::class to listOf(
