@@ -10,10 +10,10 @@ import org.bukkit.entity.*
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 
 object DeathMessageProvider {
-    
+
     private const val PLAYER_PLACEHOLDER = "<player>"
     private const val KILLER_PLACEHOLDER = "<killer>"
-    
+
     private val genericMessages = mutableObject2ObjectMapOf(
         DamageCause.FALL to listOf(
             buildText {
