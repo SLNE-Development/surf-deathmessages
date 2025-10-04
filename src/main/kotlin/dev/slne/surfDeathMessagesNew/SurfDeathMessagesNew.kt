@@ -4,6 +4,7 @@ import com.github.shynixn.mccoroutine.folia.SuspendingJavaPlugin
 import dev.slne.surf.surfapi.bukkit.api.event.register
 import dev.slne.surfDeathMessagesNew.commands.toggleDeathMessageCommands
 import dev.slne.surfDeathMessagesNew.listeners.PlayerDeathListener
+import org.bukkit.plugin.java.JavaPlugin
 
 class SurfDeathMessagesNew : SuspendingJavaPlugin() {
 
@@ -15,3 +16,5 @@ class SurfDeathMessagesNew : SuspendingJavaPlugin() {
     override fun onDisable() {
     }
 }
+
+val plugin get() = JavaPlugin.getPlugin(SurfDeathMessagesNew::class.java)

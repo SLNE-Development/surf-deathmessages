@@ -1,11 +1,15 @@
 package dev.slne.surfDeathMessagesNew.listeners
 
+import com.github.shynixn.mccoroutine.folia.launch
+import dev.slne.surf.surfapi.bukkit.api.extensions.server
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
+import dev.slne.surf.surfapi.core.api.util.mapAsync
+import dev.slne.surfDeathMessagesNew.DeathMessageState
 import dev.slne.surfDeathMessagesNew.deathmessages.DeathMessageProvider
+import dev.slne.surfDeathMessagesNew.plugin
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent
-import org.bukkit.Bukkit
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
@@ -41,10 +45,13 @@ class PlayerDeathListener : Listener {
                 }
             })
 
-        Bukkit.getOnlinePlayers().forEach { onlinePlayer ->
-            onlinePlayer.sendText {
-                //TODO: check if player has death messages enabled
-                append(message)
+        plugin.launch {
+            server.onlinePlayers.mapAsync { player ->
+                if (DeathMessageState.hasDeathMessagesEnabled(player)) {
+                    player.sendText {
+                        append(message)
+                    }
+                }
             }
         }
     }
