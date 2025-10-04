@@ -392,6 +392,18 @@ object DeathMessageProvider {
                 spacer(" hätte lieber schlafen sollen.")
             }
         ),
+        Silverfish::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde versilbert!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde vom Ungeziefer überwältigt!")
+            }
+        ),
         Hoglin::class to listOf(
             buildText {
                 appendDeathPrefix()
