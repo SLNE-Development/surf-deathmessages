@@ -185,6 +185,33 @@ object DeathMessageProvider {
                 variableValue("<player>")
                 spacer(" hat seinen Mantel vergessen!")
             }
+        ), DamageCause.WITHER to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" wurde vom Verfall verschlungen!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" ist verwelkt.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" ist innerlich zerbröselt.")
+            }
+        ), DamageCause.SONIC_BOOM to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" wurde von einem Laser durchbohrt!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" wurde verstrahlt!")
+            }
         )
     )
 
