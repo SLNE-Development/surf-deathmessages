@@ -375,6 +375,23 @@ object DeathMessageProvider {
                 variableValue("<player>")
                 spacer(" wurde von einem Hoglin zerstampft.")
             }
+        ),
+        Creaking::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" wurde von knarrendem Holz erschreckt!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" hat dem kreischenden Knarren Tribut gezollt!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue("<player>")
+                spacer(" wurde zu Brennholz verarbeitet!")
+            }
         )
     )
 
