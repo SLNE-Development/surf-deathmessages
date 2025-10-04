@@ -210,7 +210,7 @@ object DeathMessageProvider {
             buildText {
                 appendDeathPrefix()
                 variableValue("<player>")
-                spacer(" 's Gehirn wird gerade von einem Zombie gefressen!")
+                spacer("'s Gehirn wird gerade von einem Zombie gefressen!")
             }
         ),
         Skeleton::class to listOf(
