@@ -1,4 +1,4 @@
-package dev.slne.surfDeathMessagesNew
+package dev.slne.surf.deathmessages
 
 import dev.slne.surf.settings.api.surfSettingsApi
 import org.bukkit.Bukkit

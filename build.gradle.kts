@@ -12,7 +12,7 @@ dependencies{
 }
 
 surfPaperPluginApi {
-    mainClass("dev.slne.surfDeathMessagesNew.SurfDeathMessagesNew")
+    mainClass("dev.slne.surf.deathmessages.PaperMain")
     authors.add("Jo_field")
 
     generateLibraryLoader(false)

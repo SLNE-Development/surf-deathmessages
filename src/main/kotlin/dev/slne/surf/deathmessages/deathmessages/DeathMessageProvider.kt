@@ -1,4 +1,4 @@
-package dev.slne.surfDeathMessagesNew.deathmessages
+package dev.slne.surf.deathmessages.deathmessages
 
 import dev.slne.surf.surfapi.core.api.messages.Colors
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText

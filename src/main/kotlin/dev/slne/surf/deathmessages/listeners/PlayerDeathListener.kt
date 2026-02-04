@@ -1,13 +1,13 @@
-package dev.slne.surfDeathMessagesNew.listeners
+package dev.slne.surf.deathmessages.listeners
 
 import com.github.shynixn.mccoroutine.folia.launch
 import dev.slne.surf.surfapi.bukkit.api.extensions.server
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
 import dev.slne.surf.surfapi.core.api.util.mapAsync
-import dev.slne.surfDeathMessagesNew.SettingsHook
-import dev.slne.surfDeathMessagesNew.deathmessages.DeathMessageProvider
-import dev.slne.surfDeathMessagesNew.plugin
+import dev.slne.surf.deathmessages.SettingsHook
+import dev.slne.surf.deathmessages.deathmessages.DeathMessageProvider
+import dev.slne.surf.deathmessages.plugin
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.entity.LivingEntity
