@@ -1,13 +1,14 @@
-package dev.slne.surfDeathMessagesNew.listeners
+package dev.slne.surf.deathmessages.listeners
 
 import com.github.shynixn.mccoroutine.folia.launch
+import dev.slne.surf.deathmessages.SettingsHook
+import dev.slne.surf.deathmessages.deathmessages.DeathMessageProvider
+import dev.slne.surf.deathmessages.plugin
 import dev.slne.surf.surfapi.bukkit.api.extensions.server
+import dev.slne.surf.surfapi.core.api.messages.Colors
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
 import dev.slne.surf.surfapi.core.api.util.mapAsync
-import dev.slne.surfDeathMessagesNew.DeathMessageState
-import dev.slne.surfDeathMessagesNew.deathmessages.DeathMessageProvider
-import dev.slne.surfDeathMessagesNew.plugin
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.entity.LivingEntity
@@ -19,7 +20,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 import org.bukkit.event.entity.PlayerDeathEvent
 
-class PlayerDeathListener : Listener {
+object PlayerDeathListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun onPlayerDeath(event: PlayerDeathEvent) {
@@ -41,18 +42,20 @@ class PlayerDeathListener : Listener {
         val message = DeathMessageProvider.getDeathMessageComponent(player, lastDamageCause, killerEntity).hoverEvent(
             HoverEvent.showText {
                 buildText {
-                    append(originalMessage)
+                    append(originalMessage).color(Colors.GRAY)
                 }
             })
 
         plugin.launch {
             server.onlinePlayers.mapAsync { player ->
-                if (DeathMessageState.hasDeathMessagesEnabled(player)) {
-                    player.sendText {
-                        append(message)
-                    }
+
+                if (!SettingsHook.hasDeathMessagesEnabled(player.uniqueId)) return@mapAsync
+
+                player.sendText {
+                    append(message)
                 }
             }
         }
+        event.showDeathMessages = false
     }
 }
