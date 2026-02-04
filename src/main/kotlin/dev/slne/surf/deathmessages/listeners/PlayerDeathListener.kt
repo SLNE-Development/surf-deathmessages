@@ -56,5 +56,6 @@ object PlayerDeathListener : Listener {
                 }
             }
         }
+        event.showDeathMessages = false
     }
 }
