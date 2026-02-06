@@ -2,6 +2,8 @@ package dev.slne.surf.deathmessages.listeners
 
 import com.github.shynixn.mccoroutine.folia.launch
 import dev.slne.surf.deathmessages.SettingsHook
+import dev.slne.surf.deathmessages.database.Death
+import dev.slne.surf.deathmessages.database.service.deathService
 import dev.slne.surf.deathmessages.deathmessages.DeathMessageProvider
 import dev.slne.surf.deathmessages.plugin
 import dev.slne.surf.surfapi.bukkit.api.extensions.server
@@ -19,6 +21,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 import org.bukkit.event.entity.PlayerDeathEvent
+import java.time.OffsetDateTime
 
 object PlayerDeathListener : Listener {
 
@@ -37,24 +40,33 @@ object PlayerDeathListener : Listener {
             else -> null
         }
 
-        val originalMessage: Component = event.deathMessage() ?: buildText { text("") }
+        val originalMessage: Component? = event.deathMessage()
 
         val message = DeathMessageProvider.getDeathMessageComponent(player, lastDamageCause, killerEntity).hoverEvent(
             HoverEvent.showText {
                 buildText {
-                    append(originalMessage).color(Colors.GRAY)
+                    append(originalMessage ?: buildText { text("") }).color(Colors.GRAY)
                 }
             })
 
         plugin.launch {
             server.onlinePlayers.mapAsync { player ->
-
                 if (!SettingsHook.hasDeathMessagesEnabled(player.uniqueId)) return@mapAsync
-
                 player.sendText {
                     append(message)
                 }
             }
+
+            val death = Death(
+                playerUuid = player.uniqueId,
+                deathUuid = deathService.createUnusedDeathUuid(),
+                location = event.entity.location,
+                diedAt = OffsetDateTime.now(),
+                reason = originalMessage,
+                lostItems = event.player.inventory.contents.filterNotNull()
+            )
+
+            deathService.saveDeath(death)
         }
         event.showDeathMessages = false
     }
