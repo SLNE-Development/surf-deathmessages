@@ -427,6 +427,13 @@ object DeathMessageProvider {
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" wurde zu Brennholz verarbeitet!")
             }
+        ),
+        PiglinBrute::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde wurde von der goldenen Axt zerschlagen!")
+            }
         )
     )
 
