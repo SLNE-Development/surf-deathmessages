@@ -1,4 +1,4 @@
-package dev.slne.surf.deathmessages.database.table
+package dev.slne.surf.deathmessages.database.tables
 
 import dev.slne.surf.database.columns.component
 import dev.slne.surf.database.columns.nativeUuid

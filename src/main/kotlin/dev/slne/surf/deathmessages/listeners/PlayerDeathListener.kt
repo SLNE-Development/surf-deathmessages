@@ -3,7 +3,7 @@ package dev.slne.surf.deathmessages.listeners
 import com.github.shynixn.mccoroutine.folia.launch
 import dev.slne.surf.deathmessages.SettingsHook
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.deathmessages.database.service.deathService
+import dev.slne.surf.deathmessages.database.service.DeathService
 import dev.slne.surf.deathmessages.deathmessages.DeathMessageProvider
 import dev.slne.surf.deathmessages.plugin
 import dev.slne.surf.surfapi.bukkit.api.extensions.server
@@ -13,6 +13,7 @@ import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
 import dev.slne.surf.surfapi.core.api.util.mapAsync
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent
+import org.bukkit.Material
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
@@ -21,6 +22,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.inventory.ItemStack
 import java.time.OffsetDateTime
 
 object PlayerDeathListener : Listener {
@@ -59,14 +61,14 @@ object PlayerDeathListener : Listener {
 
             val death = Death(
                 playerUuid = player.uniqueId,
-                deathUuid = deathService.createUnusedDeathUuid(),
+                deathUuid = DeathService.createUnusedDeathUuid(),
                 location = event.entity.location,
                 diedAt = OffsetDateTime.now(),
                 reason = originalMessage,
-                lostItems = event.player.inventory.contents.filterNotNull()
+                lostItems = event.player.inventory.contents.filterNotNull().filter { it != ItemStack.of(Material.AIR) }
             )
 
-            deathService.saveDeath(death)
+            DeathService.saveDeath(death)
         }
         event.showDeathMessages = false
     }

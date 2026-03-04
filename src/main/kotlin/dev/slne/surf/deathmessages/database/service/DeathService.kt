@@ -1,36 +1,28 @@
 package dev.slne.surf.deathmessages.database.service
 
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.deathmessages.database.repository.deathRepository
 import dev.slne.surf.surfapi.core.api.util.requiredService
-import java.util.UUID
+import java.util.*
 
-val deathService = DeathService()
+private val deathService = requiredService<DeathService>()
 
-class DeathService {
-    suspend fun findLastDeath(playerUuid: UUID): Death? =
-        deathRepository.findLastDeath(playerUuid)
+interface DeathService {
 
-    suspend fun findHistory(playerUuid: UUID): Set<Death> =
-        deathRepository.findHistory(playerUuid)
+    suspend fun saveDeath(death: Death): Death
 
-    suspend fun findByDeathUuid(deathUuid: UUID): Death? =
-        deathRepository.findByDeathUuid(deathUuid)
+    suspend fun deleteDeath(deathUuid: UUID): Int
 
-    suspend fun saveDeath(death: Death): Death =
-        deathRepository.save(death)
+    suspend fun findAll(amount: Int = 500): List<Death>
 
-    suspend fun deleteDeath(deathUuid: UUID) {
-        deathRepository.delete(deathUuid)
-    }
+    suspend fun findLastDeath(playerUuid: UUID): Death?
 
-    suspend fun createUnusedDeathUuid(): UUID {
-        var uuid: UUID
+    suspend fun findHistory(playerUuid: UUID): Set<Death>
 
-        do {
-            uuid = UUID.randomUUID()
-        } while (deathRepository.findByDeathUuid(uuid) != null)
+    suspend fun findDeathByUuid(deathUuid: UUID): Death?
 
-        return uuid
-    }
+    suspend fun findDeathByDeathUuid(deathUuid: UUID): Death?
+
+    suspend fun createUnusedDeathUuid(): UUID
+
+    companion object : DeathService by deathService
 }

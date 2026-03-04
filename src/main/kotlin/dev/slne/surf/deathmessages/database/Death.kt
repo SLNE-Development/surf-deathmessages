@@ -7,8 +7,8 @@ import java.time.OffsetDateTime
 import java.util.*
 
 data class Death(
-    val playerUuid: UUID,
     val deathUuid: UUID,
+    val playerUuid: UUID,
     val location: Location,
     val diedAt: OffsetDateTime,
     val reason: Component?,
