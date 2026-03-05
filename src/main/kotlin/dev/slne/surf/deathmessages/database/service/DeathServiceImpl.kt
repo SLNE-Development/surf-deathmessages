@@ -98,7 +98,6 @@ class DeathServiceImpl : DeathService, Services.Fallback {
         return uuid
     }
 
-
     private fun ResultRow.toDeath(): Death {
         val worldUuid = this[DeathsTable.worldUuid]
         val world = Bukkit.getWorld(worldUuid)
@@ -150,5 +149,4 @@ class DeathServiceImpl : DeathService, Services.Fallback {
 
         return items
     }
-
 }
