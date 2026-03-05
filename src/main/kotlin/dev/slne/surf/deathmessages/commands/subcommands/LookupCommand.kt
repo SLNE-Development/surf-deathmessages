@@ -5,12 +5,12 @@ import dev.jorel.commandapi.arguments.MapArgumentBuilder
 import dev.jorel.commandapi.kotlindsl.getValue
 import dev.jorel.commandapi.kotlindsl.optionalArgument
 import dev.jorel.commandapi.kotlindsl.subcommand
+import dev.slne.surf.deathmessages.commands.sendDeathInfoMessage
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.database.service.DeathService
 import dev.slne.surf.deathmessages.permissions.Permissions
 import dev.slne.surf.surfapi.bukkit.api.command.executors.playerExecutorSuspend
 import dev.slne.surf.surfapi.core.api.font.toSmallCaps
-import dev.slne.surf.surfapi.core.api.messages.Colors
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.messages.adventure.clickOpensUrl
 import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
@@ -22,7 +22,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.entity.Player
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -85,64 +84,14 @@ private val deathPagination = Pagination<DeathRenderData> {
                     appendSpace()
                     spacer("(${record.location.world.name})")
 
-                    val deathReason = record.reason ?: buildText { spacer("Todesursache unbekannt") }
-
                     hoverEvent(buildText {
-
-                        info("Spieler:")
-                        appendSpace()
-                        variableValue(names[record.playerUuid] ?: "#Unbekannt")
-                        appendNewline()
-
-                        info("Todes-ID:")
-                        appendSpace()
-                        variableValue(record.deathUuid.toString())
-                        appendNewline()
-
-                        info("Zeitpunkt:")
-                        appendSpace()
-                        variableValue(dateTimeFormatter.format(record.diedAt))
-                        appendSpace()
-                        spacer("(${record.diedAt.formatAgo()})")
-                        appendNewline()
-
-                        info("Welt:")
-                        appendSpace()
-                        variableValue(loc.world.name)
-                        appendNewline()
-
-                        info("Exakte Position:")
-                        appendNewline()
-                        variableValue("X: ${loc.x}")
-                        appendNewline()
-                        variableValue("Y: ${loc.y}")
-                        appendNewline()
-                        variableValue("Z: ${loc.z}")
-                        appendNewline()
-
-                        info("Todesgrund:")
-                        appendNewline()
-
-                        append(deathReason.colorIfAbsent(Colors.VARIABLE_VALUE))
-                        appendNewline()
-
-                        spacer("Klicke, um alle Informationen zum Tod zu kopieren!")
+                        spacer("Klicke, um den Eintrag im Detail zu sehen!", TextDecoration.UNDERLINED)
                     })
                     clickEvent(
-                        ClickEvent.copyToClipboard(
-                            buildString {
-                                append("${record.playerUuid} ")
-                                append("${names[record.playerUuid] ?: "#Unbekannt"} ")
-                                append("${record.deathUuid} ")
-                                append("${dateTimeFormatter.format(record.diedAt)} ")
-                                append("${loc.world.name} ")
-                                append("${loc.x} ${loc.y} ${loc.z} ")
-                                append("${loc.blockX} ${loc.blockY} ${loc.blockZ} ")
-
-                                val plainReason = PlainTextComponentSerializer.plainText().serialize(deathReason)
-                                append(plainReason)
-                            }
-                        )
+                        ClickEvent.callback { audience ->
+                            val player = audience as? Player ?: return@callback
+                            player.sendDeathInfoMessage(record)
+                        }
                     )
                 }
             }
