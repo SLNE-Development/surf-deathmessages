@@ -434,6 +434,81 @@ object DeathMessageProvider {
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" wurde wurde von der goldenen Axt zerschlagen!")
             }
+        ),
+        Drowned::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einem Ertrunkenen in die Tiefe gezogen.")
+            }
+        ),
+        Vex::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einer Plage heimgesucht.")
+            }
+        ),
+        PufferFish::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat mit dem falschen Schwimmreifen gekuschelt.")
+            }
+        ),
+        Evoker::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von heraufbeschworenen Gebissen geschnappt!")
+            }
+        ),
+        Warden::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" war einfach viel zu laut!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat den Herzschlag des Grauens gespürt.")
+            }
+        ),
+        Breeze::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einer kräftigen Böe aus den Socken gehauen!")
+            }
+        ),
+        Llama::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat eine feuchte, rotzige Überraschung erlebt.")
+            }
+        ),
+        Goat::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde im hohen Bogen vom Berg geschubst!")
+            }
+        ),
+        Shulker::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" schwebt nun im siebten Himmel.")
+            }
+        ),
+        Stray::class to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einem eisigen Pfeil durchlöchert!")
+            }
         )
     )
 

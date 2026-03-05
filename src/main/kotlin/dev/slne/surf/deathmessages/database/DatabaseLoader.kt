@@ -14,12 +14,13 @@ class DatabaseLoader {
     fun connect(dataPath: Path) {
         databaseApi = DatabaseApi.create(dataPath)
     }
+
     suspend fun createTables() {
         suspendTransaction {
             SchemaUtils.create(DeathsTable)
         }
-
     }
+
     fun disconnect() {
         databaseApi.shutdown()
     }
