@@ -5,6 +5,7 @@ import dev.jorel.commandapi.kotlindsl.argument
 import dev.jorel.commandapi.kotlindsl.subcommand
 import dev.slne.surf.deathmessages.appendCopyable
 import dev.slne.surf.deathmessages.database.service.DeathService
+import dev.slne.surf.deathmessages.gui.DeathHistoryGui
 import dev.slne.surf.deathmessages.permissions.Permissions
 import dev.slne.surf.surfapi.bukkit.api.command.executors.anyExecutorSuspend
 import dev.slne.surf.surfapi.bukkit.api.extensions.server
@@ -73,6 +74,15 @@ fun findDeathByIdCommand() = subcommand("findById") {
                             appendSuccessPrefix()
                             success("Du wurdest zum Todesort teleportiert.")
                         }
+                    })
+                    .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
+            )
+            appendSpace()
+            append(
+                buildText { spacer("[Inventar ansehen]") }
+                    .clickEvent(ClickEvent.callback { audience ->
+                        val player = audience as? Player ?: return@callback
+                        DeathHistoryGui.itemsGui(player, death).open()
                     })
                     .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
             )

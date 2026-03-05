@@ -5,6 +5,7 @@ import dev.jorel.commandapi.kotlindsl.argument
 import dev.jorel.commandapi.kotlindsl.subcommand
 import dev.slne.surf.deathmessages.appendCopyable
 import dev.slne.surf.deathmessages.database.service.DeathService
+import dev.slne.surf.deathmessages.gui.DeathHistoryGui
 import dev.slne.surf.deathmessages.permissions.Permissions
 import dev.slne.surf.surfapi.bukkit.api.command.executors.anyExecutorSuspend
 import dev.slne.surf.surfapi.bukkit.api.command.util.awaitAsyncPlayerProfile
@@ -14,6 +15,7 @@ import dev.slne.surf.surfapi.core.api.util.dateTimeFormatter
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.entity.Player
+
 
 fun lastDeathCommand() = subcommand("last") {
     withPermission(Permissions.PLAYER_DEATH_LOOKUP_COMMAND)
@@ -86,6 +88,15 @@ fun lastDeathCommand() = subcommand("last") {
                             appendSuccessPrefix()
                             success("Du wurdest zum Todesort teleportiert.")
                         }
+                    })
+                    .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
+            )
+            appendSpace()
+            append(
+                buildText { spacer("[Inventar ansehen]") }
+                    .clickEvent(ClickEvent.callback { audience ->
+                        val player = audience as? Player ?: return@callback
+                        DeathHistoryGui.itemsGui(player, lastDeath).open()
                     })
                     .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
             )

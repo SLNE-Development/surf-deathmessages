@@ -16,5 +16,5 @@ object DeathsTable : LongIdTable("death_deaths") {
 
     val diedAt = offsetDateTime("died_at")
     val reason = component("reason").nullable()
-    val lostItems = blob("lost_items") // Save as Bytes may be better
+    val lostItems = blob("lost_items")
 }

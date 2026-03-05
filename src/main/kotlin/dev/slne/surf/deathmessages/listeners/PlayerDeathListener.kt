@@ -13,7 +13,6 @@ import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
 import dev.slne.surf.surfapi.core.api.util.mapAsync
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent
-import org.bukkit.Material
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
@@ -22,7 +21,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.inventory.ItemStack
 import java.time.OffsetDateTime
 
 object PlayerDeathListener : Listener {
@@ -54,9 +52,7 @@ object PlayerDeathListener : Listener {
         plugin.launch {
             server.onlinePlayers.mapAsync { player ->
                 if (!SettingsHook.hasDeathMessagesEnabled(player.uniqueId)) return@mapAsync
-                player.sendText {
-                    append(message)
-                }
+                player.sendMessage(message)
             }
 
             val death = Death(
@@ -65,7 +61,7 @@ object PlayerDeathListener : Listener {
                 location = event.entity.location,
                 diedAt = OffsetDateTime.now(),
                 reason = originalMessage,
-                lostItems = event.player.inventory.contents.filterNotNull().filter { it != ItemStack.of(Material.AIR) }
+                lostItems = event.drops.filterNotNull().filterNot { it.isEmpty }.toList()
             )
 
             DeathService.saveDeath(death)

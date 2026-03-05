@@ -19,7 +19,9 @@ import net.kyori.adventure.util.Services
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
 
@@ -117,25 +119,36 @@ class DeathServiceImpl : DeathService, Services.Fallback {
         )
     }
 
-    private fun serializeItems(items: List<ItemStack>): ByteArray =
-        ByteArrayOutputStream().use { arrayOut ->
-            DataOutputStream(arrayOut).use { dataOut ->
-                dataOut.writeByte(1)
-                dataOut.writeInt(items.size)
+    private fun serializeItems(items: List<ItemStack>): ByteArray {
+        val out = ByteArrayOutputStream()
+        val data = DataOutputStream(out)
 
-                for (item in items) {
-                    if (item.isEmpty) {
-                        dataOut.writeInt(0)
-                    } else {
-                        val bytes = item.serializeAsBytes()
-                        dataOut.writeInt(bytes.size)
-                        dataOut.write(bytes)
-                    }
-                }
-                arrayOut.toByteArray()
-            }
+        data.writeInt(items.size)
+
+        for (item in items) {
+            val bytes = item.serializeAsBytes()
+            data.writeInt(bytes.size)
+            data.write(bytes)
         }
 
-    private fun deserializeItems(bytes: ByteArray): List<ItemStack> =
-        ItemStack.deserializeItemsFromBytes(bytes).toList()
+        return out.toByteArray()
+    }
+
+    private fun deserializeItems(bytes: ByteArray): List<ItemStack> {
+        val input = DataInputStream(ByteArrayInputStream(bytes))
+
+        val size = input.readInt()
+        val items = mutableListOf<ItemStack>()
+
+        repeat(size) {
+            val length = input.readInt()
+            val itemBytes = ByteArray(length)
+            input.readFully(itemBytes)
+
+            items.add(ItemStack.deserializeBytes(itemBytes))
+        }
+
+        return items
+    }
+
 }
