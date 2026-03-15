@@ -114,7 +114,7 @@ object DeathHistoryGui { //TODO: rework
 
                 line {
                     appendBullet()
-                    info("Ort:")
+                    info("Koordinaten:")
                     appendSpace()
                     variableValue("${loc.blockX}, ${loc.blockY}, ${loc.blockZ}")
                     appendSpace()
