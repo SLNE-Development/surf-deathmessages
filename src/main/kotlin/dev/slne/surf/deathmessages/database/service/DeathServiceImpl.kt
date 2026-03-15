@@ -11,18 +11,15 @@ import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.selectAll
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.database.tables.DeathsTable
+import dev.slne.surf.surfapi.bukkit.api.extensions.server
+import dev.slne.surf.surfapi.core.api.util.logger
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.flow.toSet
 import net.kyori.adventure.util.Services
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.DataOutputStream
 import java.util.*
 
 @AutoService(DeathService::class)
@@ -32,28 +29,28 @@ class DeathServiceImpl : DeathService, Services.Fallback {
         suspendTransaction {
             DeathsTable
                 .selectAll()
-                .where(DeathsTable.playerUuid eq playerUuid)
+                .where(DeathsTable.playerId eq playerUuid)
                 .orderBy(DeathsTable.id, SortOrder.DESC)
                 .limit(1)
                 .firstOrNull()
                 ?.toDeath()
         }
 
-    override suspend fun findHistory(playerUuid: UUID): Set<Death> =
+    override suspend fun findHistory(playerUuid: UUID): List<Death> =
         suspendTransaction {
             DeathsTable
                 .selectAll()
-                .where { DeathsTable.playerUuid eq playerUuid }
+                .where { DeathsTable.playerId eq playerUuid }
                 .orderBy(DeathsTable.id, SortOrder.DESC)
                 .map { it.toDeath() }
-                .toSet()
+                .toList()
         }
 
     override suspend fun findDeathByUuid(deathUuid: UUID): Death? =
         suspendTransaction {
             DeathsTable
                 .selectAll()
-                .where { DeathsTable.deathUuid eq deathUuid }
+                .where { DeathsTable.deathId eq deathUuid }
                 .firstOrNull()
                 ?.toDeath()
         }
@@ -63,29 +60,31 @@ class DeathServiceImpl : DeathService, Services.Fallback {
 
     override suspend fun deleteDeath(deathUuid: UUID): Int =
         suspendTransaction {
-            DeathsTable.deleteWhere { DeathsTable.deathUuid eq deathUuid }
+            DeathsTable.deleteWhere { DeathsTable.deathId eq deathUuid }
         }
 
-    override suspend fun findAll(amount: Int): List<Death> = suspendTransaction {
-        DeathsTable.selectAll()
-            .orderBy(DeathsTable.diedAt to SortOrder.DESC)
-            .limit(amount)
-            .map { it.toDeath() }
-            .toList()
-    }
+    override suspend fun findAll(amount: Int): List<Death> =
+        suspendTransaction {
+            DeathsTable.selectAll()
+                .orderBy(DeathsTable.diedAt to SortOrder.DESC)
+                .limit(amount)
+                .map { it.toDeath() }
+                .toList()
+        }
 
     override suspend fun saveDeath(death: Death): Death =
         suspendTransaction {
             DeathsTable.insert {
-                it[deathUuid] = death.deathUuid
-                it[playerUuid] = death.playerUuid
-                it[worldUuid] = death.location.world.uid
+                it[deathId] = death.deathUuid
+                it[playerId] = death.playerUuid
+                it[worldId] = death.location.world.uid
                 it[x] = death.location.x
                 it[y] = death.location.y
                 it[z] = death.location.z
                 it[diedAt] = death.diedAt
                 it[reason] = death.reason
-                it[lostItems] = ExposedBlob(serializeItems(death.lostItems))
+                it[isKeepInventory] = death.isKeepInventory
+                it[lostItems] = ExposedBlob(serializeItems(death.deathInventory))
             }
             death
         }
@@ -99,54 +98,55 @@ class DeathServiceImpl : DeathService, Services.Fallback {
     }
 
     private fun ResultRow.toDeath(): Death {
-        val worldUuid = this[DeathsTable.worldUuid]
+        val worldUuid = this[DeathsTable.worldId]
         val world = Bukkit.getWorld(worldUuid)
-            ?: error("World with UUID $worldUuid not found!")
+
+        if (world == null) {
+            logger().atWarning().log(
+                "Death record ${this[DeathsTable.deathId]} references unknown world $worldUuid"
+            )
+        }
 
         return Death(
-            playerUuid = this[DeathsTable.playerUuid],
-            deathUuid = this[DeathsTable.deathUuid],
+            playerUuid = this[DeathsTable.playerId],
+            deathUuid = this[DeathsTable.deathId],
             location = Location(
-                world,
+                world ?: server.worlds.first(),
                 this[DeathsTable.x],
                 this[DeathsTable.y],
                 this[DeathsTable.z]
             ),
             diedAt = this[DeathsTable.diedAt],
             reason = this[DeathsTable.reason],
-            lostItems = deserializeItems(this[DeathsTable.lostItems].bytes)
+            isKeepInventory = this[DeathsTable.isKeepInventory],
+            deathInventory = deserializeItems(this[DeathsTable.lostItems].bytes)
         )
     }
 
-    private fun serializeItems(items: List<ItemStack>): ByteArray {
-        val out = ByteArrayOutputStream()
-        val data = DataOutputStream(out)
-
-        data.writeInt(items.size)
-
-        for (item in items) {
-            val bytes = item.serializeAsBytes()
-            data.writeInt(bytes.size)
-            data.write(bytes)
-        }
-
-        return out.toByteArray()
+    /**
+     * Uses Paper's native inventory serialization (same as Protect plugin).
+     */
+    private fun serializeItems(items: Array<ItemStack?>): ByteArray {
+        val array = Array(items.size) { i -> items[i] ?: ItemStack.empty() }
+        return ItemStack.serializeItemsAsBytes(array)
     }
 
-    private fun deserializeItems(bytes: ByteArray): List<ItemStack> {
-        val input = DataInputStream(ByteArrayInputStream(bytes))
+    /**
+     * Uses Paper's native inventory deserialization.
+     */
+    private fun deserializeItems(bytes: ByteArray): Array<ItemStack?> {
+        return ItemStack.deserializeItemsFromBytes(bytes)
+            .map { it as ItemStack? }
+            .toTypedArray()
+    }
 
-        val size = input.readInt()
-        val items = mutableListOf<ItemStack>()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        return true
+    }
 
-        repeat(size) {
-            val length = input.readInt()
-            val itemBytes = ByteArray(length)
-            input.readFully(itemBytes)
-
-            items.add(ItemStack.deserializeBytes(itemBytes))
-        }
-
-        return items
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
     }
 }

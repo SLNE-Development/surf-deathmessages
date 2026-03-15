@@ -16,7 +16,7 @@ interface DeathService {
 
     suspend fun findLastDeath(playerUuid: UUID): Death?
 
-    suspend fun findHistory(playerUuid: UUID): Set<Death>
+    suspend fun findHistory(playerUuid: UUID): List<Death>
 
     suspend fun findDeathByUuid(deathUuid: UUID): Death?
 

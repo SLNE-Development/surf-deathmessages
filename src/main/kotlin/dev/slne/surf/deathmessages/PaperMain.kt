@@ -35,4 +35,9 @@ class PaperMain : SuspendingJavaPlugin() {
     }
 }
 
+fun SurfComponentBuilder.appendBullet() {
+    spacer("-")
+    appendSpace()
+}
+
 val plugin get() = JavaPlugin.getPlugin(PaperMain::class.java)

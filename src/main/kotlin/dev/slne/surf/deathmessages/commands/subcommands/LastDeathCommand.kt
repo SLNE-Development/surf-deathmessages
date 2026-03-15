@@ -45,6 +45,6 @@ fun lastDeathCommand() = subcommand("last") {
             return@anyExecutorSuspend
         }
 
-        sender.sendDeathInfoMessage(lastDeath)
+        sender.sendDeathInfoMessage(lastDeath, true)
     }
 }

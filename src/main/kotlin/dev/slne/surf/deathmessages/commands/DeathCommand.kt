@@ -57,14 +57,18 @@ private fun SurfComponentBuilder.appendCopyable(
     )
 }
 
-fun CommandSender.sendDeathInfoMessage(death: Death) = sendText {
+fun CommandSender.sendDeathInfoMessage(death: Death, lastDeath: Boolean = false) = sendText {
     val playerName = server.getOfflinePlayer(death.playerUuid).name ?: "#Unbekannt"
 
     appendInfoPrefix()
     spacer("-".repeat(30))
 
     appendNewInfoPrefixedLine()
-    appendCopyable("Letzter Tod von", playerName, "den Namen")
+    if (lastDeath) {
+        appendCopyable("Letzter Tod von", playerName, "den Namen")
+    } else {
+        appendCopyable("Tod von", playerName, "den Namen")
+    }
 
     val diedAtFormatted = dateTimeFormatter.format(death.diedAt)
     appendNewInfoPrefixedLine()
