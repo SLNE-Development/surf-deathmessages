@@ -113,7 +113,7 @@ fun CommandSender.sendDeathInfoMessage(death: Death, lastDeath: Boolean = false)
                 viewFrame.open(
                     DeathHistoryView::class.java,
                     player,
-                    mapOf("death" to death) // Das ist das 'initialData' Objekt
+                    mapOf("death" to death)
                 )
             })
             .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
