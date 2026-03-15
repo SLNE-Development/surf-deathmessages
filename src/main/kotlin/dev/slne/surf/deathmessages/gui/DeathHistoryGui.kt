@@ -100,21 +100,21 @@ object DeathHistoryGui { //TODO: rework
             buildLore {
                 line {
                     appendBullet()
-                    primary("Spieler:")
+                    info("Spieler:")
                     appendSpace()
                     variableValue(playerName)
                 }
 
                 line {
                     appendBullet()
-                    primary("Zeitpunkt:")
+                    info("Zeitpunkt:")
                     appendSpace()
                     variableValue(dateTimeFormatter.format(diedAt))
                 }
 
                 line {
                     appendBullet()
-                    primary("Ort:")
+                    info("Ort:")
                     appendSpace()
                     variableValue("${loc.blockX}, ${loc.blockY}, ${loc.blockZ}")
                     appendSpace()
@@ -123,7 +123,7 @@ object DeathHistoryGui { //TODO: rework
 
                 line {
                     appendBullet()
-                    primary("Grund:")
+                    info("Grund:")
                     appendSpace()
                     if (reason != null) {
                         append(reason).color(Colors.VARIABLE_VALUE)
@@ -134,14 +134,14 @@ object DeathHistoryGui { //TODO: rework
 
                 line {
                     appendBullet()
-                    primary("KeepInventory:")
+                    info("KeepInventory:")
                     appendSpace()
                     variableValue(if (isKeepInventory) "Ja" else "Nein")
                 }
 
                 line {
                     appendBullet()
-                    primary("UUID:")
+                    info("UUID:")
                     appendSpace()
                     variableValue(deathUuid.toString())
                 }
