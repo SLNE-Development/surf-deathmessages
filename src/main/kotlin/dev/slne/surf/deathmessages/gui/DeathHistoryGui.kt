@@ -1,92 +1,109 @@
 package dev.slne.surf.deathmessages.gui
 
-import com.github.stefvanschie.inventoryframework.gui.GuiItem
-import com.github.stefvanschie.inventoryframework.pane.StaticPane
 import dev.slne.surf.deathmessages.appendBullet
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.permissions.Permissions
 import dev.slne.surf.surfapi.bukkit.api.builder.buildItem
 import dev.slne.surf.surfapi.bukkit.api.builder.buildLore
 import dev.slne.surf.surfapi.bukkit.api.builder.displayName
-import dev.slne.surf.surfapi.bukkit.api.inventory.dsl.playerMenu
+import dev.slne.surf.surfapi.bukkit.api.extensions.server
+import dev.slne.surf.surfapi.bukkit.api.inventory.framework.titleBuilder
 import dev.slne.surf.surfapi.core.api.font.toSmallCaps
 import dev.slne.surf.surfapi.core.api.messages.Colors
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.util.dateTimeFormatter
+import me.devnatan.inventoryframework.View
+import me.devnatan.inventoryframework.ViewConfigBuilder
+import me.devnatan.inventoryframework.context.RenderContext
+import me.devnatan.inventoryframework.context.SlotClickContext
+import me.devnatan.inventoryframework.state.State
+import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.translation.GlobalTranslator.render
 import org.bukkit.Bukkit
 import org.bukkit.Material
-import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-object DeathHistoryGui { //TODO: rework
+@Suppress("UnstableApiUsage")
+object DeathHistoryView : View() {
+
+    private val deathState: State<Death> = initialState("death")
+
+    override fun onInit(config: ViewConfigBuilder) {
+        config
+            .size(6)
+            .titleBuilder {
+                primary("Todes-Inventar".toSmallCaps())
+            }
+            .layout(
+                "AAAAAPPCI",
+                "MMMMMMMMM",
+                "MMMMMMMMM",
+                "MMMMMMMMM",
+                "PPPPPPPPP",
+                "HHHHHHHHH"
+            )
+            .cancelInteractions()
+    }
+
+    override fun onFirstRender(render: RenderContext) {
+        val death = deathState.get(render)
+        val deadPlayerName = server.getOfflinePlayer(death.playerUuid).name ?: death.playerUuid.toString()
+
+        render.updateTitleForPlayer(buildText {
+            primary(deadPlayerName)
+            appendSpace()
+            darkSpacer("(${dateTimeFormatter.format(death.diedAt)})")
+        })
+
+        val inv = death.deathInventory
+
+        val armorItems = listOf(39, 38, 37, 36, 40)
+        var armorIdx = 0
+        render.layoutSlot('A').onRender { slot ->
+            val invIndex = armorItems.getOrNull(armorIdx++) ?: return@onRender
+            slot.item = inv.getOrNull(invIndex) ?: PLACEHOLDER_ITEM
+        }.onClick { click -> handleItemInteraction(click) }
+
+        var mainIdx = 9
+        render.layoutSlot('M').onRender { slot ->
+            slot.item = inv.getOrNull(mainIdx++) ?: PLACEHOLDER_ITEM
+        }.onClick { click -> handleItemInteraction(click) }
+
+        var hotbarIdx = 0
+        render.layoutSlot('H').onRender { slot ->
+            slot.item = inv.getOrNull(hotbarIdx++) ?: PLACEHOLDER_ITEM
+        }.onClick { click -> handleItemInteraction(click) }
+
+        render.layoutSlot('P', PLACEHOLDER_ITEM)
+
+        render.layoutSlot('C', CLOSE_ITEM).onClick { click ->
+            click.closeForPlayer()
+        }
+
+        render.layoutSlot('I', death.buildInfoItem())
+    }
+
+    private fun handleItemInteraction(click: SlotClickContext) {
+        val item = click.item ?: return
+        if (item.type == Material.GRAY_STAINED_GLASS_PANE) {
+            click.isCancelled = true
+            return
+        }
+
+        if (!click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)) {
+            click.isCancelled = true
+        }
+    }
 
     private val PLACEHOLDER_ITEM = buildItem(Material.GRAY_STAINED_GLASS_PANE) {
-        displayName(buildText { darkSpacer("Platzhalter".toSmallCaps()) })
+        displayName {
+            darkSpacer("Platzhalter".toSmallCaps())
+        }
     }
 
     private val CLOSE_ITEM = buildItem(Material.IRON_DOOR) {
-        displayName(buildText { error("Inventar schließen".toSmallCaps()) })
-    }
-
-    fun itemsGui(player: Player, death: Death) = playerMenu(buildText {
-        val deadPlayerName = Bukkit.getOfflinePlayer(death.playerUuid).name ?: death.playerUuid.toString()
-        primary(deadPlayerName)
-        appendSpace()
-        darkSpacer("(${dateTimeFormatter.format(death.diedAt)})")
-    }, player, 6) {
-        val pane = StaticPane(0, 0, 9, 6)
-
-        pane.fillWith(PLACEHOLDER_ITEM)
-
-        val armor = listOf(
-            death.deathInventory.getOrNull(39),
-            death.deathInventory.getOrNull(38),
-            death.deathInventory.getOrNull(37),
-            death.deathInventory.getOrNull(36),
-            death.deathInventory.getOrNull(40)
-        )
-        armor.forEachIndexed { i, item -> pane.addItem(createGuiItem(item), i, 0) }
-
-        pane.addItem(GuiItem(CLOSE_ITEM) { event ->
-            event.isCancelled = true
-            event.whoClicked.closeInventory()
-        }, 7, 0)
-
-        pane.addItem(createGuiItem(death.buildInfoItem(), isSystemItem = true), 8, 0)
-
-        val mainInv = death.deathInventory.slice(9..35)
-        var mainIdx = 0
-        for (row in 1..3) {
-            for (col in 0..8) {
-                if (mainIdx < mainInv.size) {
-                    pane.addItem(createGuiItem(mainInv[mainIdx]), col, row)
-                    mainIdx++
-                }
-            }
-        }
-
-        val hotbar = death.deathInventory.slice(0..8)
-        hotbar.forEachIndexed { i, item -> pane.addItem(createGuiItem(item), i, 5) }
-
-        addPane(pane)
-    }
-
-    private fun createGuiItem(item: ItemStack?, isSystemItem: Boolean = false): GuiItem {
-        val display = item ?: PLACEHOLDER_ITEM
-
-        return GuiItem(display) { event ->
-            val clicker = event.whoClicked as? Player ?: return@GuiItem
-
-            if (isSystemItem) {
-                event.isCancelled = true
-                return@GuiItem
-            }
-
-            if (clicker.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)) {
-                event.isCancelled = false
-            } else {
-                event.isCancelled = true
-            }
+        displayName {
+            error("Inventar schließen".toSmallCaps())
         }
     }
 
@@ -96,55 +113,19 @@ object DeathHistoryGui { //TODO: rework
 
         return buildItem(Material.REPEATING_COMMAND_BLOCK) {
             displayName(buildText { primary("Todes-Informationen".toSmallCaps()) })
-
             buildLore {
+                line { appendBullet(); info("Spieler:"); appendSpace(); variableValue(playerName) }
+                line { appendBullet(); info("Zeitpunkt:"); appendSpace(); variableValue(dateTimeFormatter.format(diedAt)) }
                 line {
-                    appendBullet()
-                    info("Spieler:")
-                    appendSpace()
-                    variableValue(playerName)
-                }
-
-                line {
-                    appendBullet()
-                    info("Zeitpunkt:")
-                    appendSpace()
-                    variableValue(dateTimeFormatter.format(diedAt))
-                }
-
-                line {
-                    appendBullet()
-                    info("Koordinaten:")
-                    appendSpace()
+                    appendBullet(); info("Koordinaten:"); appendSpace()
                     variableValue("${loc.blockX}, ${loc.blockY}, ${loc.blockZ}")
-                    appendSpace()
-                    spacer("(${loc.world?.name ?: "Unbekannt"})")
                 }
-
                 line {
-                    appendBullet()
-                    info("Grund:")
-                    appendSpace()
-                    if (reason != null) {
-                        append(reason).color(Colors.VARIABLE_VALUE)
-                    } else {
-                        error("Kein Grund angegeben")
-                    }
+                    appendBullet(); info("Grund:"); appendSpace()
+                    if (reason != null) append(reason).color(Colors.VARIABLE_VALUE) else error("Kein Grund")
                 }
-
-                line {
-                    appendBullet()
-                    info("KeepInventory:")
-                    appendSpace()
-                    variableValue(if (isKeepInventory) "Ja" else "Nein")
-                }
-
-                line {
-                    appendBullet()
-                    info("UUID:")
-                    appendSpace()
-                    variableValue(deathUuid.toString())
-                }
+                line { appendBullet(); info("KeepInventory:"); appendSpace(); variableValue(if (isKeepInventory) "Ja" else "Nein") }
+                line { appendBullet(); info("UUID:"); appendSpace(); variableValue(deathUuid.toString()) }
             }
         }
     }

@@ -5,8 +5,9 @@ import dev.slne.surf.deathmessages.commands.subcommands.findDeathByIdCommand
 import dev.slne.surf.deathmessages.commands.subcommands.lastDeathCommand
 import dev.slne.surf.deathmessages.commands.subcommands.lookupCommand
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.deathmessages.gui.DeathHistoryGui
+import dev.slne.surf.deathmessages.gui.DeathHistoryView
 import dev.slne.surf.deathmessages.permissions.Permissions
+import dev.slne.surf.surfapi.bukkit.api.inventory.framework.viewFrame
 import dev.slne.surf.surfapi.core.api.messages.Colors
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
@@ -18,6 +19,7 @@ import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import kotlin.jvm.java
 
 fun deathCommand() = commandAPICommand("death") {
     withPermission(Permissions.PLAYER_DEATH_GENERIC_COMMAND)
@@ -108,7 +110,11 @@ fun CommandSender.sendDeathInfoMessage(death: Death, lastDeath: Boolean = false)
         buildText { spacer("[Inventar ansehen]") }
             .clickEvent(ClickEvent.callback { audience ->
                 val player = audience as? Player ?: return@callback
-                DeathHistoryGui.itemsGui(player, death).open()
+                viewFrame.open(
+                    DeathHistoryView::class.java,
+                    player,
+                    mapOf("death" to death) // Das ist das 'initialData' Objekt
+                )
             })
             .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
     )
