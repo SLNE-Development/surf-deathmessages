@@ -85,8 +85,6 @@ object PlayerDeathListener : Listener {
                 deathInventory = inventorySnapshots.getIfPresent(player.uniqueId) ?: emptyArray()
             )
 
-            println(inventorySnapshots.getIfPresent(player.uniqueId))
-
             DeathService.saveDeath(death)
         }
         event.showDeathMessages = false
