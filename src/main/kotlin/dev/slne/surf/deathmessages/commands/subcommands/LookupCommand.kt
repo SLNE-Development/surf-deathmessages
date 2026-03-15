@@ -103,7 +103,7 @@ fun lookupCommand() = subcommand("lookup") {
     withPermission(Permissions.PLAYER_DEATH_LOOKUP_COMMAND)
 
     optionalArgument(
-        MapArgumentBuilder<String, String>("query", ':')
+        MapArgumentBuilder<String, String>("query", ' ')
             .withKeyMapper { it.lowercase() }
             .withValueMapper { it }
             .withKeyList(listOf("--player", "--time", "--radius", "--page", "--limit"))

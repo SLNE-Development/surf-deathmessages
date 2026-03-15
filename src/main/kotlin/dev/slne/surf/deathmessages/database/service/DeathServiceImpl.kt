@@ -123,17 +123,11 @@ class DeathServiceImpl : DeathService, Services.Fallback {
         )
     }
 
-    /**
-     * Uses Paper's native inventory serialization (same as Protect plugin).
-     */
     private fun serializeItems(items: Array<ItemStack?>): ByteArray {
         val array = Array(items.size) { i -> items[i] ?: ItemStack.empty() }
         return ItemStack.serializeItemsAsBytes(array)
     }
 
-    /**
-     * Uses Paper's native inventory deserialization.
-     */
     private fun deserializeItems(bytes: ByteArray): Array<ItemStack?> {
         return ItemStack.deserializeItemsFromBytes(bytes)
             .map { it as ItemStack? }
