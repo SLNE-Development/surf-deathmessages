@@ -12,6 +12,7 @@ import dev.slne.surf.surfapi.core.api.messages.Colors
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.util.dateTimeFormatter
 import me.devnatan.inventoryframework.View
+import me.devnatan.inventoryframework.ViewConfig
 import me.devnatan.inventoryframework.ViewConfigBuilder
 import me.devnatan.inventoryframework.context.OpenContext
 import me.devnatan.inventoryframework.context.RenderContext
@@ -22,14 +23,7 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
 object DeathHistoryView : View() {
-
     private val deathState: State<Death> = initialState("death")
-
-    private enum class ClickType {
-        UNMOVABLE,
-        CLOSE,
-        TAKEABLE
-    }
 
     private val PLACEHOLDER_ITEM = buildItem(Material.GRAY_STAINED_GLASS_PANE) {
         displayName {
@@ -88,47 +82,32 @@ object DeathHistoryView : View() {
         render.layoutSlot('A').onRender { slot ->
             val invIndex = armorItems.getOrNull(armorIdx++) ?: return@onRender
             slot.item = inv.getOrNull(invIndex)
-        }.onClick { click -> handleItemInteraction(click, ClickType.TAKEABLE) }
+        }.onClick { click ->
+           click.isCancelled = !click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)
+        }
 
         var mainIdx = 9
         render.layoutSlot('M').onRender { slot ->
             slot.item = inv.getOrNull(mainIdx++)
-        }.onClick { click -> handleItemInteraction(click, ClickType.TAKEABLE) }
+        }.onClick { click ->
+            click.isCancelled = !click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)
+        }
 
         var hotbarIdx = 0
         render.layoutSlot('H').onRender { slot ->
             slot.item = inv.getOrNull(hotbarIdx++)
-        }.onClick { click -> handleItemInteraction(click, ClickType.TAKEABLE) }
-
-        render.layoutSlot('P', PLACEHOLDER_ITEM).onClick { click -> //TODO: why is this still movable?
-            handleItemInteraction(click, ClickType.UNMOVABLE)
+        }.onClick { click ->
+            click.isCancelled = !click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)
         }
+
+        render.layoutSlot('P', PLACEHOLDER_ITEM).cancelOnClick()
 
         render.layoutSlot('C', CLOSE_ITEM).onClick { click ->
-            handleItemInteraction(click, ClickType.CLOSE)
+            click.isCancelled = true
+            click.closeForPlayer()
         }
 
-        render.layoutSlot('I', death.buildInfoItem()).onClick { click ->
-            handleItemInteraction(click, ClickType.UNMOVABLE)
-        }
-
-    }
-
-    private fun handleItemInteraction(click: SlotClickContext, type: ClickType) {
-        when (type) {
-            ClickType.UNMOVABLE -> {
-                click.isCancelled = true
-            }
-
-            ClickType.CLOSE -> {
-                click.closeForPlayer()
-                click.isCancelled = true
-            }
-
-            ClickType.TAKEABLE -> {
-                click.isCancelled = !click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)
-            }
-        }
+        render.layoutSlot('I', death.buildInfoItem()).cancelOnClick()
     }
 
     private fun Death.buildInfoItem(): ItemStack {
