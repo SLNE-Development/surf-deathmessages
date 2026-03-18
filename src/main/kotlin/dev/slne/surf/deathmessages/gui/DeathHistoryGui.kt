@@ -12,11 +12,9 @@ import dev.slne.surf.surfapi.core.api.messages.Colors
 import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
 import dev.slne.surf.surfapi.core.api.util.dateTimeFormatter
 import me.devnatan.inventoryframework.View
-import me.devnatan.inventoryframework.ViewConfig
 import me.devnatan.inventoryframework.ViewConfigBuilder
 import me.devnatan.inventoryframework.context.OpenContext
 import me.devnatan.inventoryframework.context.RenderContext
-import me.devnatan.inventoryframework.context.SlotClickContext
 import me.devnatan.inventoryframework.state.State
 import org.bukkit.Bukkit
 import org.bukkit.Material
