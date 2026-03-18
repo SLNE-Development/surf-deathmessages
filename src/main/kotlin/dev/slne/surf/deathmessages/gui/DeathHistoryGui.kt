@@ -2,7 +2,6 @@ package dev.slne.surf.deathmessages.gui
 
 import dev.slne.surf.deathmessages.appendBullet
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.deathmessages.permissions.Permissions
 import dev.slne.surf.surfapi.bukkit.api.builder.buildItem
 import dev.slne.surf.surfapi.bukkit.api.builder.buildLore
 import dev.slne.surf.surfapi.bukkit.api.builder.displayName
@@ -57,6 +56,7 @@ object DeathHistoryView : View() {
                 "PPPPPPPPP",
                 "HHHHHHHHH"
             )
+            .cancelInteractions()
     }
 
     override fun onOpen(open: OpenContext) {
@@ -80,32 +80,23 @@ object DeathHistoryView : View() {
         render.layoutSlot('A').onRender { slot ->
             val invIndex = armorItems.getOrNull(armorIdx++) ?: return@onRender
             slot.item = inv.getOrNull(invIndex)
-        }.onClick { click ->
-           click.isCancelled = !click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)
         }
 
         var mainIdx = 9
         render.layoutSlot('M').onRender { slot ->
             slot.item = inv.getOrNull(mainIdx++)
-        }.onClick { click ->
-            click.isCancelled = !click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)
         }
 
         var hotbarIdx = 0
         render.layoutSlot('H').onRender { slot ->
             slot.item = inv.getOrNull(hotbarIdx++)
-        }.onClick { click ->
-            click.isCancelled = !click.player.hasPermission(Permissions.PLAYER_DEATH_TAKE_LOST_ITEMS)
         }
 
-        render.layoutSlot('P', PLACEHOLDER_ITEM).cancelOnClick()
+        render.layoutSlot('P', PLACEHOLDER_ITEM)
 
-        render.layoutSlot('C', CLOSE_ITEM).onClick { click ->
-            click.isCancelled = true
-            click.closeForPlayer()
-        }
+        render.layoutSlot('C', CLOSE_ITEM)
 
-        render.layoutSlot('I', death.buildInfoItem()).cancelOnClick()
+        render.layoutSlot('I', death.buildInfoItem())
     }
 
     private fun Death.buildInfoItem(): ItemStack {
