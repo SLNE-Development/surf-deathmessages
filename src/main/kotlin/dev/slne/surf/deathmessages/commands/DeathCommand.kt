@@ -14,12 +14,12 @@ import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
 import dev.slne.surf.surfapi.core.api.messages.builder.SurfComponentBuilder
 import dev.slne.surf.surfapi.core.api.util.dateTimeFormatter
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickCallback
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import kotlin.jvm.java
 
 fun deathCommand() = commandAPICommand("death") {
     withPermission(Permissions.PLAYER_DEATH_GENERIC_COMMAND)
@@ -28,7 +28,6 @@ fun deathCommand() = commandAPICommand("death") {
     withSubcommand(findDeathByIdCommand())
     withSubcommand(lookupCommand())
 }
-
 
 private fun SurfComponentBuilder.appendCopyable(
     label: String,
@@ -93,31 +92,29 @@ fun CommandSender.sendDeathInfoMessage(death: Death, lastDeath: Boolean = false)
     appendCopyable("Todesursache", deathReason, "die Todesursache")
 
     appendNewInfoPrefixedLine()
-    append(
-        buildText { spacer("[Zu Todesort teleportieren]") }
-            .clickEvent(ClickEvent.callback { audience ->
-                val player = audience as? Player ?: return@callback
-                player.teleportAsync(death.location)
-                player.sendText {
-                    appendSuccessPrefix()
-                    success("Du wurdest zum Todesort teleportiert.")
-                }
-            })
-            .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
-    )
+    append {
+        spacer("[Zu Todesort teleportieren]")
+        clickEvent(ClickEvent.callback(ClickCallback.widen({ player ->
+            player.teleportAsync(death.location)
+            player.sendText {
+                appendSuccessPrefix()
+                success("Du wurdest zum Todesort teleportiert.")
+            }
+        }, Player::class.java)))
+        hoverEvent(buildText { info("Klicke um dich zum Todesort zu teleportieren.") })
+    }
     appendSpace()
-    append(
-        buildText { spacer("[Inventar ansehen]") }
-            .clickEvent(ClickEvent.callback { audience ->
-                val player = audience as? Player ?: return@callback
-                viewFrame.open(
-                    DeathHistoryView::class.java,
-                    player,
-                    mapOf("death" to death)
-                )
-            })
-            .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
-    )
+    append {
+        spacer("[Inventar ansehen]")
+        clickEvent(ClickEvent.callback(ClickCallback.widen({ player ->
+            viewFrame.open(
+                DeathHistoryView::class.java,
+                player,
+                mapOf("death" to death)
+            )
+        }, Player::class.java)))
+        hoverEvent(buildText { info("Klicke um dich zum Todesort zu teleportieren.") })
+    }
 
     appendNewInfoPrefixedLine()
     spacer("-".repeat(30))

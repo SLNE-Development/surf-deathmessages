@@ -16,14 +16,13 @@ import dev.slne.surf.surfapi.core.api.util.logger
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import net.kyori.adventure.util.Services
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
 @AutoService(DeathService::class)
-class DeathServiceImpl : DeathService, Services.Fallback {
+class DeathServiceImpl : DeathService {
 
     override suspend fun findLastDeath(playerUuid: UUID): Death? =
         suspendTransaction {

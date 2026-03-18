@@ -145,7 +145,7 @@ fun lookupCommand() = subcommand("lookup") {
     }
 }
 
-private val rangeRegex by lazy { Regex("""(\d+)([smhdw])""", RegexOption.IGNORE_CASE) }
+private val rangeRegex = Regex("""(\d+)([smhdw])""", RegexOption.IGNORE_CASE)
 
 private suspend fun Map<String, String>.parseDeathFilters(player: Player): DeathLookupFilter {
     val playerUuid = this["--player"]?.let { PlayerLookupService.getUuid(it) }
@@ -198,7 +198,6 @@ data class DeathLookupFilter(
         )
     }
 }
-
 
 object DeathLookupService {
     suspend fun lookup(filter: DeathLookupFilter): List<Death> {
