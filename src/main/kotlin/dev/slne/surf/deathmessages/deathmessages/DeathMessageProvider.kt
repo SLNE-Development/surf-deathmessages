@@ -315,7 +315,27 @@ object DeathMessageProvider {
             buildText {
                 appendDeathPrefix()
                 variableValue(PLAYER_PLACEHOLDER)
-                spacer(" wurde von einem Stray durchlöchert!")
+                spacer(" wurde zum unfreiwilligen Nadelkissen.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" verlor das Duell gegen klappernde Knochen.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einem Klappergestell fachgerecht zerlegt.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einem Pfeil im Knie gestoppt.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" diente als wandelnde Zielscheibe.")
             }
         ),
         Ghast::class.java to objectListOf(
@@ -365,6 +385,16 @@ object DeathMessageProvider {
                 appendDeathPrefix()
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" wurde von einem Enderman getötet.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einem Langbeiner in den Schatten gestellt.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" lernte, dass Starren unhöflich (und tödlich) ist.")
             }
         ),
         IronGolem::class.java to objectListOf(
@@ -372,6 +402,11 @@ object DeathMessageProvider {
                 appendDeathPrefix()
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" wurde von einem Eisengolem zermatscht!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat Bekanntschaft mit 20 Tonnen Eisen gemacht.")
             }
         ),
         Ravager::class.java to objectListOf(
@@ -511,6 +546,24 @@ object DeathMessageProvider {
                 appendDeathPrefix()
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" wurde von einem eisigen Pfeil durchlöchert!")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von einem Stray durchlöchert!")
+            }
+        ),
+        Dolphin::class.java to objectListOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde zerbissen!")
+            },
+            buildText {
+                appendDeathPrefix()
+                spacer("Machs gut ")
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(", und danke für den Fisch!")
             }
         )
     )
