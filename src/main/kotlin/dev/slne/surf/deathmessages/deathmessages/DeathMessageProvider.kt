@@ -578,6 +578,18 @@ object DeathMessageProvider {
                 spacer(" hat die Axt im Walde gefunden.")
             }
         ),
+        Guardian::class.java to objectListOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat herausgefunden, dass Laser im Wasser doch funktionieren.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat den falschen Fisch angeglotzt.")
+            }
+        )
     )
 
     private val DEFAULT_MESSAGE = buildText {
