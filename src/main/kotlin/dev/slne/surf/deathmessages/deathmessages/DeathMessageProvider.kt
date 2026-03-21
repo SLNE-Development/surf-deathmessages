@@ -565,7 +565,19 @@ object DeathMessageProvider {
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(", und danke für den Fisch!")
             }
-        )
+        ),
+        Vindicator::class.java to objectListOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wurde von Johnny persönlich rasiert.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat die Axt im Walde gefunden.")
+            }
+        ),
     )
 
     private val DEFAULT_MESSAGE = buildText {
