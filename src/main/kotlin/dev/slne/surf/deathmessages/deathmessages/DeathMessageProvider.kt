@@ -589,6 +589,13 @@ object DeathMessageProvider {
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" hat den falschen Fisch angeglotzt.")
             }
+        ),
+        Pillager::class.java to objectListOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wollte nur kuscheln, aber der Pillager hatte keine Arme frei.")
+            }
         )
     )
 
