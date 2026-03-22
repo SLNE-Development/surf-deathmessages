@@ -162,6 +162,11 @@ object DeathMessageProvider {
                 appendDeathPrefix()
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" schwimmt nun mit den Fischen.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat nicht genügend Luft geholt.")
             }
         ),
         DamageCause.CRAMMING to objectListOf(
