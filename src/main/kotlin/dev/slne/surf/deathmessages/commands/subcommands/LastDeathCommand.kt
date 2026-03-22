@@ -8,6 +8,7 @@ import dev.slne.surf.deathmessages.database.service.DeathService
 import dev.slne.surf.deathmessages.permissions.Permissions
 import dev.slne.surf.surfapi.bukkit.api.command.executors.anyExecutorSuspend
 import dev.slne.surf.surfapi.bukkit.api.command.util.awaitAsyncPlayerProfile
+import dev.slne.surf.surfapi.bukkit.api.command.util.idOrThrow
 import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
 
 
@@ -17,26 +18,13 @@ fun lastDeathCommand() = subcommand("last") {
 
     anyExecutorSuspend { sender, args ->
         val profile = args.awaitAsyncPlayerProfile("player")
-        val uuid = profile.id
-
-        if (uuid == null) {
-            sender.sendText {
-                appendErrorPrefix()
-                error("Der angegebene Spieler")
-                appendSpace()
-                variableValue(profile.name ?: "#Unbekannt")
-                appendSpace()
-                error("Konnte nicht gefunden werden.")
-            }
-            return@anyExecutorSuspend
-        }
-
+        val uuid = profile.idOrThrow()
         val lastDeath = DeathService.findLastDeath(uuid)
 
         if (lastDeath == null) {
             sender.sendText {
                 appendErrorPrefix()
-                error("Es wurden keine Tod für den Spieler")
+                error("Es wurden kein Tod für den Spieler")
                 appendSpace()
                 variableValue(profile.name ?: uuid.toString())
                 appendSpace()
