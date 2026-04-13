@@ -6,9 +6,9 @@ import dev.jorel.commandapi.kotlindsl.subcommand
 import dev.slne.surf.deathmessages.commands.sendDeathInfoMessage
 import dev.slne.surf.deathmessages.database.service.DeathService
 import dev.slne.surf.deathmessages.permissions.Permissions
-import dev.slne.surf.surfapi.bukkit.api.command.executors.anyExecutorSuspend
-import dev.slne.surf.surfapi.bukkit.api.command.util.awaitAsyncPlayerProfile
-import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
+import dev.slne.surf.api.paper.command.executors.anyExecutorSuspend
+import dev.slne.surf.api.paper.command.util.awaitAsyncPlayerProfile
+import dev.slne.surf.api.core.messages.adventure.sendText
 
 
 fun lastDeathCommand() = subcommand("last") {

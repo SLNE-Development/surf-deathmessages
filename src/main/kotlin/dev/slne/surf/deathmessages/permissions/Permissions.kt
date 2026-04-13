@@ -1,6 +1,6 @@
 package dev.slne.surf.deathmessages.permissions
 
-import dev.slne.surf.surfapi.bukkit.api.permission.PermissionRegistry
+import dev.slne.surf.api.paper.permission.PermissionRegistry
 
 object Permissions : PermissionRegistry() {
         private const val PREFIX = "surf.deathmessages"

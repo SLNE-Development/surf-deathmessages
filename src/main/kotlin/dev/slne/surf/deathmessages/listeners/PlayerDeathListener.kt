@@ -7,10 +7,10 @@ import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.database.service.DeathService
 import dev.slne.surf.deathmessages.deathmessages.DeathMessageProvider
 import dev.slne.surf.deathmessages.plugin
-import dev.slne.surf.surfapi.bukkit.api.extensions.server
-import dev.slne.surf.surfapi.core.api.messages.Colors
-import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
-import dev.slne.surf.surfapi.core.api.util.mapAsync
+import dev.slne.surf.api.paper.extensions.server
+import dev.slne.surf.api.core.messages.Colors
+import dev.slne.surf.api.core.messages.adventure.buildText
+import dev.slne.surf.api.core.util.mapAsync
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.entity.LivingEntity
@@ -70,7 +70,7 @@ object PlayerDeathListener : Listener {
 
         plugin.launch {
             server.onlinePlayers.mapAsync { player ->
-                if (SettingsHook.hasDeathMessagesEnabled(player.uniqueId)) {
+                if(plugin.hasSettingsHook && SettingsHook.hasDeathMessagesEnabled(player.uniqueId)) {
                     player.sendMessage(message)
                 }
             }

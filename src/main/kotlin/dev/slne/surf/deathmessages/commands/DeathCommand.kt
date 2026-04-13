@@ -1,25 +1,24 @@
 package dev.slne.surf.deathmessages.commands
 
 import dev.jorel.commandapi.kotlindsl.commandAPICommand
+import dev.slne.surf.api.core.messages.Colors
+import dev.slne.surf.api.core.messages.adventure.buildText
+import dev.slne.surf.api.core.messages.adventure.sendText
+import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
+import dev.slne.surf.api.core.util.dateTimeFormatter
+import dev.slne.surf.api.paper.inventory.framework.viewFrame
 import dev.slne.surf.deathmessages.commands.subcommands.findDeathByIdCommand
 import dev.slne.surf.deathmessages.commands.subcommands.lastDeathCommand
 import dev.slne.surf.deathmessages.commands.subcommands.lookupCommand
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.gui.DeathHistoryView
 import dev.slne.surf.deathmessages.permissions.Permissions
-import dev.slne.surf.surfapi.bukkit.api.inventory.framework.viewFrame
-import dev.slne.surf.surfapi.core.api.messages.Colors
-import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
-import dev.slne.surf.surfapi.core.api.messages.adventure.sendText
-import dev.slne.surf.surfapi.core.api.messages.builder.SurfComponentBuilder
-import dev.slne.surf.surfapi.core.api.util.dateTimeFormatter
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import kotlin.jvm.java
 
 fun deathCommand() = commandAPICommand("death") {
     withPermission(Permissions.PLAYER_DEATH_GENERIC_COMMAND)
@@ -46,7 +45,9 @@ private fun SurfComponentBuilder.appendCopyable(
     info("$label: ")
     append(
         buildText {
-            if (value is Component) append(value.colorIfAbsent(Colors.VARIABLE_VALUE)) else variableValue(displayValue)
+            if (value is Component) append(value.colorIfAbsent(Colors.VARIABLE_VALUE)) else variableValue(
+                displayValue
+            )
         }
             .clickEvent(ClickEvent.copyToClipboard(rawText))
             .hoverEvent(HoverEvent.showText(buildText {

@@ -2,14 +2,14 @@ package dev.slne.surf.deathmessages.gui
 
 import dev.slne.surf.deathmessages.appendBullet
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.surfapi.bukkit.api.builder.buildItem
-import dev.slne.surf.surfapi.bukkit.api.builder.buildLore
-import dev.slne.surf.surfapi.bukkit.api.builder.displayName
-import dev.slne.surf.surfapi.bukkit.api.extensions.server
-import dev.slne.surf.surfapi.core.api.font.toSmallCaps
-import dev.slne.surf.surfapi.core.api.messages.Colors
-import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
-import dev.slne.surf.surfapi.core.api.util.dateTimeFormatter
+import dev.slne.surf.api.paper.builder.buildItem
+import dev.slne.surf.api.paper.builder.buildLore
+import dev.slne.surf.api.paper.builder.displayName
+import dev.slne.surf.api.paper.extensions.server
+import dev.slne.surf.api.core.font.toSmallCaps
+import dev.slne.surf.api.core.messages.Colors
+import dev.slne.surf.api.core.messages.adventure.buildText
+import dev.slne.surf.api.core.util.dateTimeFormatter
 import me.devnatan.inventoryframework.View
 import me.devnatan.inventoryframework.ViewConfigBuilder
 import me.devnatan.inventoryframework.context.OpenContext

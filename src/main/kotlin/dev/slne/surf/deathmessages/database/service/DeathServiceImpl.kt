@@ -11,8 +11,8 @@ import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.selectAll
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.database.tables.DeathsTable
-import dev.slne.surf.surfapi.bukkit.api.extensions.server
-import dev.slne.surf.surfapi.core.api.util.logger
+import dev.slne.surf.api.paper.extensions.server
+import dev.slne.surf.api.core.util.logger
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList

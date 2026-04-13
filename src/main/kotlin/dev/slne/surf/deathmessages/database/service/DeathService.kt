@@ -1,7 +1,7 @@
 package dev.slne.surf.deathmessages.database.service
 
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.surfapi.core.api.util.requiredService
+import dev.slne.surf.api.core.util.requiredService
 import java.util.*
 
 private val deathService = requiredService<DeathService>()

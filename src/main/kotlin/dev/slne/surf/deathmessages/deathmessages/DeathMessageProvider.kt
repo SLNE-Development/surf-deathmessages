@@ -1,9 +1,9 @@
 package dev.slne.surf.deathmessages.deathmessages
 
-import dev.slne.surf.surfapi.core.api.messages.Colors
-import dev.slne.surf.surfapi.core.api.messages.adventure.buildText
-import dev.slne.surf.surfapi.core.api.messages.builder.SurfComponentBuilder
-import dev.slne.surf.surfapi.core.api.util.mutableObject2ObjectMapOf
+import dev.slne.surf.api.core.messages.Colors
+import dev.slne.surf.api.core.messages.adventure.buildText
+import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
+import dev.slne.surf.api.core.util.mutableObject2ObjectMapOf
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextReplacementConfig
 import org.bukkit.entity.*
