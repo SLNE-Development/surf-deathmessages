@@ -534,16 +534,19 @@ object DeathMessageProvider {
     ): Component {
         var deathMessage = getMessage(cause, killer)
         deathMessage = deathMessage.replaceText(
-            TextReplacementConfig.builder().matchLiteral(PLAYER_PLACEHOLDER).replacement(player.displayName()).build()
+            TextReplacementConfig.builder().matchLiteral(PLAYER_PLACEHOLDER)
+                .replacement(player.displayName()).build()
         )
 
         killer?.let { kr ->
             val killerName = when (kr) {
                 is Player -> kr.displayName()
-                else -> Component.translatable(kr.type.translationKey()).colorIfAbsent(Colors.VARIABLE_VALUE)
+                else -> Component.translatable(kr.type.translationKey())
+                    .colorIfAbsent(Colors.VARIABLE_VALUE)
             }
             deathMessage = deathMessage.replaceText(
-                TextReplacementConfig.builder().matchLiteral(KILLER_PLACEHOLDER).replacement(killerName).build()
+                TextReplacementConfig.builder().matchLiteral(KILLER_PLACEHOLDER)
+                    .replacement(killerName).build()
             )
         }
 
@@ -552,7 +555,7 @@ object DeathMessageProvider {
 
     private fun SurfComponentBuilder.appendDeathPrefix() = append {
         spacer("[")
-        error("💀")
+        error("☠️")
         spacer("]")
         appendSpace()
     }
