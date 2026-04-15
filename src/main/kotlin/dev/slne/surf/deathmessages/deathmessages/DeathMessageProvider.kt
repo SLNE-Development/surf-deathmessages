@@ -554,9 +554,9 @@ object DeathMessageProvider {
     }
 
     private fun SurfComponentBuilder.appendDeathPrefix() = append {
-        spacer("[")
-        error("☠️")
-        spacer("]")
+        darkSpacer("[")
+        error("☠")
+        darkSpacer("]")
         appendSpace()
     }
 }
