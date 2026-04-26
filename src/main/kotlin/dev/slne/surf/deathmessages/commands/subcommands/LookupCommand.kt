@@ -199,7 +199,6 @@ data class DeathLookupFilter(
     }
 }
 
-
 object DeathLookupService {
     suspend fun lookup(filter: DeathLookupFilter): List<Death> {
         val source = if (filter.playerUuid != null) {
