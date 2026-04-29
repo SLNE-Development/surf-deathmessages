@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.slne.surf.deathmessages"
-version = "1.1.1-SNAPSHOT"
+version = "1.1.2-SNAPSHOT"
 
 dependencies {
     compileOnly("dev.slne.surf.settings:surf-settings-api:+")
