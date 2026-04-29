@@ -27,6 +27,7 @@ object DeathMessageProvider {
                 spacer(" hat die Höhe unterschätzt.")
             }
         ),
+
         DamageCause.VOID to listOf(
             buildText {
                 appendDeathPrefix()
@@ -42,6 +43,23 @@ object DeathMessageProvider {
                 appendDeathPrefix()
                 variableValue(PLAYER_PLACEHOLDER)
                 spacer(" wird den Boden wohl nie erreichen.")
+            }
+        ),
+        DamageCause.WORLD_BORDER to listOf(
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" wollte mit dem Kopf durch die Wand.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat die Grenze des Seins überschritten.")
+            },
+            buildText {
+                appendDeathPrefix()
+                variableValue(PLAYER_PLACEHOLDER)
+                spacer(" hat versucht, das Unmögliche zu verlassen.")
             }
         ),
         DamageCause.THORNS to listOf(
