@@ -2,37 +2,38 @@ package dev.slne.surf.deathmessages.listeners
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.shynixn.mccoroutine.folia.launch
+import com.google.common.flogger.StackSize
+import com.sksamuel.aedile.core.expireAfterWrite
+import dev.slne.surf.api.core.messages.Colors
+import dev.slne.surf.api.core.messages.adventure.buildText
+import dev.slne.surf.api.core.util.logger
+import dev.slne.surf.api.paper.event.common.death.PlayerDeathMessageEvent
+import dev.slne.surf.api.paper.util.forEachPlayer
 import dev.slne.surf.deathmessages.SettingsHook
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.database.service.DeathService
 import dev.slne.surf.deathmessages.deathmessages.DeathMessageProvider
 import dev.slne.surf.deathmessages.plugin
-import dev.slne.surf.api.paper.extensions.server
-import dev.slne.surf.api.core.messages.Colors
-import dev.slne.surf.api.core.messages.adventure.buildText
-import dev.slne.surf.api.core.util.mapAsync
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.inventory.ItemStack
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.toJavaDuration
 
 object PlayerDeathListener : Listener {
 
+    private val log = logger()
+
     private val inventorySnapshots = Caffeine.newBuilder()
-        .expireAfterWrite(3.minutes.toJavaDuration())
+        .expireAfterWrite(3.minutes)
         .maximumSize(10_000)
         .build<UUID, Array<ItemStack?>>()
 
@@ -46,47 +47,80 @@ object PlayerDeathListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun onPlayerDeath(event: PlayerDeathEvent) {
+        saveDeath(
+            event.player,
+            event.deathMessage(),
+            event.keepInventory
+        )
+
+        broadcastDeathMessage(event)
+    }
+
+    private fun broadcastDeathMessage(event: PlayerDeathEvent) {
+        if (!event.showDeathMessages) return
+
         val player = event.player
+        val damageCause = player.lastDamageCause?.cause
 
-        val lastDamageCause: DamageCause? = event.entity.lastDamageCause?.cause
-        assert(lastDamageCause != null) { error("${player.name} (${player.uniqueId}) died without a last damage cause. This should not happen!") }
+        if (damageCause == null) {
+            log.atWarning()
+                .withStackTrace(StackSize.SMALL)
+                .log("Player ${player.name} (${player.uniqueId}) died without a last damage cause. This should not happen!")
+            return
+        }
 
-        val damageEntity = (player.lastDamageCause as? EntityDamageByEntityEvent)?.damager
-
-        val killerEntity: LivingEntity? = when (damageEntity) {
+        val killerEntity: LivingEntity? = when (val damageEntity = event.damageSource.directEntity) {
             is Projectile -> (damageEntity.shooter as? LivingEntity)
             is LivingEntity -> damageEntity
             else -> null
         }
 
-        val originalMessage: Component? = event.deathMessage()
-
-        val message = DeathMessageProvider.getDeathMessageComponent(player, lastDamageCause, killerEntity).hoverEvent(
-            HoverEvent.showText {
+        var message = DeathMessageProvider.getDeathMessageComponent(player, damageCause, killerEntity)
+            .hoverEvent(
                 buildText {
-                    append(originalMessage ?: buildText { text("") }).color(Colors.GRAY)
+                    append(event.deathMessage() ?: buildText { text("") }).color(Colors.GRAY)
                 }
-            })
+            )
 
-        plugin.launch {
-            server.onlinePlayers.mapAsync { player ->
-                if(plugin.hasSettingsHook && SettingsHook.hasDeathMessagesEnabled(player.uniqueId)) {
+        val messageEvent = PlayerDeathMessageEvent(player, message, damageCause)
+        if (!messageEvent.call()) {
+            event.showDeathMessages = false
+            return
+        }
+
+        message = messageEvent.message
+
+        event.showDeathMessages = false
+        event.deathMessage(message)
+
+        forEachPlayer { player ->
+            if (plugin.hasSettingsHook) {
+                if (SettingsHook.hasDeathMessagesEnabled(player.uniqueId)) {
                     player.sendMessage(message)
                 }
+            } else {
+                player.sendMessage(message)
             }
+        }
+    }
 
+    private fun saveDeath(player: Player, originalMessage: Component?, isKeepInventory: Boolean) {
+        val uuid = player.uniqueId
+        val location = player.location
+        val now = OffsetDateTime.now()
+
+        plugin.launch {
             val death = Death(
-                playerUuid = player.uniqueId,
+                playerUuid = uuid,
                 deathUuid = DeathService.createUnusedDeathUuid(),
-                location = event.entity.location,
-                diedAt = OffsetDateTime.now(),
+                location = location,
+                diedAt = now,
                 reason = originalMessage,
-                isKeepInventory = event.keepInventory,
-                deathInventory = inventorySnapshots.getIfPresent(player.uniqueId) ?: emptyArray()
+                isKeepInventory = isKeepInventory,
+                deathInventory = inventorySnapshots.getIfPresent(uuid) ?: emptyArray()
             )
 
             DeathService.saveDeath(death)
         }
-        event.showDeathMessages = false
     }
 }
