@@ -5,7 +5,7 @@ import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
 import dev.slne.surf.api.paper.event.register
 import dev.slne.surf.api.paper.extensions.pluginManager
 import dev.slne.surf.api.paper.inventory.framework.viewFrame
-import dev.slne.surf.deathmessages.commands.deathCommand
+import dev.slne.surf.deathmessages.command.deathCommand
 import dev.slne.surf.deathmessages.database.databaseLoader
 import dev.slne.surf.deathmessages.gui.DeathHistoryView
 import dev.slne.surf.deathmessages.listeners.PlayerDeathListener

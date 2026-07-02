@@ -9,10 +9,10 @@ import dev.slne.surf.api.core.messages.adventure.buildText
 import dev.slne.surf.api.core.util.logger
 import dev.slne.surf.api.paper.event.common.death.PlayerDeathMessageEvent
 import dev.slne.surf.api.paper.util.forEachPlayer
-import dev.slne.surf.deathmessages.SettingsHook
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.deathmessages.database.service.DeathService
+import dev.slne.surf.deathmessages.database.repository.DeathRepository
 import dev.slne.surf.deathmessages.deathmessages.DeathMessageProvider
+import dev.slne.surf.deathmessages.hook.SettingsHook
 import dev.slne.surf.deathmessages.plugin
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.LivingEntity
@@ -69,18 +69,20 @@ object PlayerDeathListener : Listener {
             return
         }
 
-        val killerEntity: LivingEntity? = when (val damageEntity = event.damageSource.directEntity) {
-            is Projectile -> (damageEntity.shooter as? LivingEntity)
-            is LivingEntity -> damageEntity
-            else -> null
-        }
+        val killerEntity: LivingEntity? =
+            when (val damageEntity = event.damageSource.directEntity) {
+                is Projectile -> (damageEntity.shooter as? LivingEntity)
+                is LivingEntity -> damageEntity
+                else -> null
+            }
 
-        var message = DeathMessageProvider.getDeathMessageComponent(player, damageCause, killerEntity)
-            .hoverEvent(
-                buildText {
-                    append(event.deathMessage() ?: buildText { text("") }).color(Colors.GRAY)
-                }
-            )
+        var message =
+            DeathMessageProvider.getDeathMessageComponent(player, damageCause, killerEntity)
+                .hoverEvent(
+                    buildText {
+                        append(event.deathMessage() ?: buildText { text("") }).color(Colors.GRAY)
+                    }
+                )
 
         val messageEvent = PlayerDeathMessageEvent(player, message, damageCause)
         if (!messageEvent.call()) {
@@ -112,7 +114,7 @@ object PlayerDeathListener : Listener {
         plugin.launch {
             val death = Death(
                 playerUuid = uuid,
-                deathUuid = DeathService.createUnusedDeathUuid(),
+                deathUuid = DeathRepository.createUnusedDeathUuid(),
                 location = location,
                 diedAt = now,
                 reason = originalMessage,
@@ -120,7 +122,7 @@ object PlayerDeathListener : Listener {
                 deathInventory = inventorySnapshots.getIfPresent(uuid) ?: emptyArray()
             )
 
-            DeathService.saveDeath(death)
+            DeathRepository.saveDeath(death)
         }
     }
 }
