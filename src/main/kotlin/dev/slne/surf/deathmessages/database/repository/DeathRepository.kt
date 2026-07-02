@@ -1,6 +1,7 @@
-package dev.slne.surf.deathmessages.database.service
+package dev.slne.surf.deathmessages.database.repository
 
-import com.google.auto.service.AutoService
+import dev.slne.surf.api.core.util.logger
+import dev.slne.surf.api.paper.extensions.server
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.ResultRow
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.SortOrder
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.eq
@@ -11,21 +12,16 @@ import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.selectAll
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.database.tables.DeathsTable
-import dev.slne.surf.api.paper.extensions.server
-import dev.slne.surf.api.core.util.logger
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import net.kyori.adventure.util.Services
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
-@AutoService(DeathService::class)
-class DeathServiceImpl : DeathService, Services.Fallback {
-
-    override suspend fun findLastDeath(playerUuid: UUID): Death? =
+object DeathRepository {
+    suspend fun findLastDeath(playerUuid: UUID): Death? =
         suspendTransaction {
             DeathsTable
                 .selectAll()
@@ -36,7 +32,7 @@ class DeathServiceImpl : DeathService, Services.Fallback {
                 ?.toDeath()
         }
 
-    override suspend fun findHistory(playerUuid: UUID): List<Death> =
+    suspend fun findHistory(playerUuid: UUID): List<Death> =
         suspendTransaction {
             DeathsTable
                 .selectAll()
@@ -46,7 +42,7 @@ class DeathServiceImpl : DeathService, Services.Fallback {
                 .toList()
         }
 
-    override suspend fun findDeathByUuid(deathUuid: UUID): Death? =
+    suspend fun findDeathByUuid(deathUuid: UUID): Death? =
         suspendTransaction {
             DeathsTable
                 .selectAll()
@@ -55,15 +51,15 @@ class DeathServiceImpl : DeathService, Services.Fallback {
                 ?.toDeath()
         }
 
-    override suspend fun findDeathByDeathUuid(deathUuid: UUID): Death? =
+    suspend fun findDeathByDeathUuid(deathUuid: UUID): Death? =
         findDeathByUuid(deathUuid)
 
-    override suspend fun deleteDeath(deathUuid: UUID): Int =
+    suspend fun deleteDeath(deathUuid: UUID): Int =
         suspendTransaction {
             DeathsTable.deleteWhere { DeathsTable.deathId eq deathUuid }
         }
 
-    override suspend fun findAll(amount: Int): List<Death> =
+    suspend fun findAll(amount: Int = 500): List<Death> =
         suspendTransaction {
             DeathsTable.selectAll()
                 .orderBy(DeathsTable.diedAt to SortOrder.DESC)
@@ -72,7 +68,7 @@ class DeathServiceImpl : DeathService, Services.Fallback {
                 .toList()
         }
 
-    override suspend fun saveDeath(death: Death): Death =
+    suspend fun saveDeath(death: Death): Death =
         suspendTransaction {
             DeathsTable.insert {
                 it[deathId] = death.deathUuid
@@ -89,7 +85,7 @@ class DeathServiceImpl : DeathService, Services.Fallback {
             death
         }
 
-    override suspend fun createUnusedDeathUuid(): UUID {
+    suspend fun createUnusedDeathUuid(): UUID {
         var uuid: UUID
         do {
             uuid = UUID.randomUUID()

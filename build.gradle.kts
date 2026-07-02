@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.slne.surf.deathmessages"
-version = "1.1.6"
+version = "1.1.7"
 
 dependencies {
     compileOnly("dev.slne.surf.settings:surf-settings-api:+")
@@ -18,6 +18,7 @@ surfPaperPluginApi {
     generateLibraryLoader(false)
     foliaSupported(true)
 
+    withCorePaper()
     withSurfDatabaseR2dbc("1.4.0", "dev.slne.surf.deathmessages.libs")
 
     serverDependencies {

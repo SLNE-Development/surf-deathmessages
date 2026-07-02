@@ -1,4 +1,4 @@
-package dev.slne.surf.deathmessages.commands
+package dev.slne.surf.deathmessages.command
 
 import dev.jorel.commandapi.kotlindsl.commandAPICommand
 import dev.slne.surf.api.core.messages.Colors
@@ -7,12 +7,12 @@ import dev.slne.surf.api.core.messages.adventure.sendText
 import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
 import dev.slne.surf.api.core.util.dateTimeFormatter
 import dev.slne.surf.api.paper.inventory.framework.viewFrame
-import dev.slne.surf.deathmessages.commands.subcommands.findDeathByIdCommand
-import dev.slne.surf.deathmessages.commands.subcommands.lastDeathCommand
-import dev.slne.surf.deathmessages.commands.subcommands.lookupCommand
+import dev.slne.surf.deathmessages.command.subcommand.findDeathByIdCommand
+import dev.slne.surf.deathmessages.command.subcommand.lastDeathCommand
+import dev.slne.surf.deathmessages.command.subcommand.lookupCommand
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.gui.DeathHistoryView
-import dev.slne.surf.deathmessages.permissions.Permissions
+import dev.slne.surf.deathmessages.permissions.PermissionList
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
@@ -21,7 +21,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
 fun deathCommand() = commandAPICommand("death") {
-    withPermission(Permissions.PLAYER_DEATH_GENERIC_COMMAND)
+    withPermission(PermissionList.PLAYER_DEATH_GENERIC_COMMAND)
 
     withSubcommand(lastDeathCommand())
     withSubcommand(findDeathByIdCommand())

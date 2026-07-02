@@ -1,23 +1,21 @@
-package dev.slne.surf.deathmessages.commands.subcommands
+package dev.slne.surf.deathmessages.command.subcommand
 
-import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.arguments.MapArgumentBuilder
 import dev.jorel.commandapi.kotlindsl.getValue
 import dev.jorel.commandapi.kotlindsl.optionalArgument
 import dev.jorel.commandapi.kotlindsl.subcommand
-import dev.slne.surf.deathmessages.commands.sendDeathInfoMessage
-import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.deathmessages.database.service.DeathService
-import dev.slne.surf.deathmessages.permissions.Permissions
-import dev.slne.surf.api.paper.command.executors.playerExecutorSuspend
 import dev.slne.surf.api.core.font.toSmallCaps
 import dev.slne.surf.api.core.messages.adventure.buildText
-import dev.slne.surf.api.core.messages.adventure.clickOpensUrl
 import dev.slne.surf.api.core.messages.adventure.sendText
 import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
 import dev.slne.surf.api.core.messages.pagination.Pagination
 import dev.slne.surf.api.core.service.PlayerLookupService
 import dev.slne.surf.api.core.util.dateTimeFormatter
+import dev.slne.surf.api.paper.command.executors.playerExecutorSuspend
+import dev.slne.surf.deathmessages.command.sendDeathInfoMessage
+import dev.slne.surf.deathmessages.database.Death
+import dev.slne.surf.deathmessages.database.service.DeathLookupService
+import dev.slne.surf.deathmessages.permissions.PermissionList
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.event.ClickEvent
@@ -28,7 +26,6 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.pow
 
 private data class DeathRenderData(
     val names: Map<UUID, String>,
@@ -85,7 +82,10 @@ private val deathPagination = Pagination<DeathRenderData> {
                     spacer("(${record.location.world.name})")
 
                     hoverEvent(buildText {
-                        spacer("Klicke, um den Eintrag im Detail zu sehen!", TextDecoration.UNDERLINED)
+                        spacer(
+                            "Klicke, um den Eintrag im Detail zu sehen!",
+                            TextDecoration.UNDERLINED
+                        )
                     })
                     clickEvent(
                         ClickEvent.callback { audience ->
@@ -100,7 +100,7 @@ private val deathPagination = Pagination<DeathRenderData> {
 }
 
 fun lookupCommand() = subcommand("lookup") {
-    withPermission(Permissions.PLAYER_DEATH_LOOKUP_COMMAND)
+    withPermission(PermissionList.PLAYER_DEATH_LOOKUP_COMMAND)
 
     optionalArgument(
         MapArgumentBuilder<String, String>("query", ' ')
@@ -124,10 +124,15 @@ fun lookupCommand() = subcommand("lookup") {
         val deaths = DeathLookupService.lookup(filter)
 
         if (deaths.isEmpty()) {
-            throw CommandAPI.failWithString("Es wurden keine Todes-Einträge gefunden.")
+            player.sendText {
+                appendErrorPrefix()
+                error("Es wurden keine Tode gefunden.")
+            }
+            return@playerExecutorSuspend
         }
 
         val names = ConcurrentHashMap<UUID, String>()
+
         coroutineScope {
             deaths.map { it.playerUuid }.distinct().forEach { uuid ->
                 launch {
@@ -199,33 +204,6 @@ data class DeathLookupFilter(
     }
 }
 
-object DeathLookupService {
-    suspend fun lookup(filter: DeathLookupFilter): List<Death> {
-        val source = if (filter.playerUuid != null) {
-            DeathService.findHistory(filter.playerUuid)
-        } else {
-            DeathService.findAll()
-        }
-
-        return source
-            .asSequence()
-            .filter { it.location.world.name == filter.worldName }
-            .filter { filter.after == null || it.diedAt.isAfter(filter.after) }
-            .filter {
-                if (filter.radius == null) true
-                else {
-                    val loc = it.location
-                    val distanceSq = (loc.x - filter.centerX).pow(2) +
-                            (loc.y - filter.centerY).pow(2) +
-                            (loc.z - filter.centerZ).pow(2)
-                    distanceSq <= filter.radius.pow(2)
-                }
-            }
-            .sortedByDescending { it.diedAt }
-            .take(filter.limit)
-            .toList()
-    }
-}
 
 private fun OffsetDateTime.formatAgo(): String {
     val then = toInstant()
