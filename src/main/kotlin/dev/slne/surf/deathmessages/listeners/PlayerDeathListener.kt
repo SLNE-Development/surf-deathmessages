@@ -2,7 +2,6 @@ package dev.slne.surf.deathmessages.listeners
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.shynixn.mccoroutine.folia.launch
-import com.google.common.flogger.StackSize
 import com.sksamuel.aedile.core.expireAfterWrite
 import dev.slne.surf.api.core.messages.Colors
 import dev.slne.surf.api.core.messages.adventure.buildText
@@ -62,13 +61,6 @@ object PlayerDeathListener : Listener {
         val player = event.player
         val damageCause = player.lastDamageCause?.cause
 
-        if (damageCause == null) {
-            log.atWarning()
-                .withStackTrace(StackSize.SMALL)
-                .log("Player ${player.name} (${player.uniqueId}) died without a last damage cause. This should not happen!")
-            return
-        }
-
         val killerEntity: LivingEntity? =
             when (val damageEntity = event.damageSource.directEntity) {
                 is Projectile -> (damageEntity.shooter as? LivingEntity)
@@ -76,15 +68,14 @@ object PlayerDeathListener : Listener {
                 else -> null
             }
 
-        var message =
-            DeathMessageProvider.getDeathMessageComponent(player, damageCause, killerEntity)
-                .hoverEvent(
-                    buildText {
-                        append(event.deathMessage() ?: buildText { text("") }).color(Colors.GRAY)
-                    }
-                )
+        var message = DeathMessageProvider.getDeathMessageComponent(player, damageCause, killerEntity)
+            .hoverEvent(
+                buildText {
+                    append(event.deathMessage() ?: buildText { text("") }).color(Colors.GRAY)
+                }
+            )
 
-        val messageEvent = PlayerDeathMessageEvent(player, message, damageCause)
+        val messageEvent = PlayerDeathMessageEvent(player, message, damageCause ?: EntityDamageEvent.DamageCause.CUSTOM)
         if (!messageEvent.call()) {
             event.showDeathMessages = false
             return
