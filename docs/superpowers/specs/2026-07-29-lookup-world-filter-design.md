@@ -49,6 +49,29 @@ relevant, wenn `radius != null`.
 Auflösung des Weltnamens: `Bukkit.getWorld(name)`, bei `null` Fallback auf
 `server.worlds.firstOrNull { it.name.equals(name, ignoreCase = true) }`.
 
+Es werden ausschließlich echte Bukkit-Weltnamen akzeptiert, keine Kurz-Aliase wie
+`nether` oder `end`. Ein Alias-Mapping über `World.Environment` wäre mehrdeutig,
+sobald der Server mehrere Welten desselben Environments betreibt.
+
+### Eingabe-Syntax
+
+`MapArgumentBuilder("query", ' ')` setzt den Delimiter (Key → Value) auf ein
+Leerzeichen; der Separator (Paar → Paar) ist per Default ebenfalls `" "`
+(`MapArgumentBuilder.java:34`). Daraus ergibt sich:
+
+```
+/death lookup --world world_nether
+/death lookup --player Timon --world world_nether --time 7d
+```
+
+Weltnamen mit Leerzeichen müssen gequotet oder escaped werden, weil Werte bis
+zum nächsten Leerzeichen gelesen werden (`MapArgument.java:358`):
+
+```
+/death lookup --world "meine welt"
+/death lookup --world meine\ welt
+```
+
 **Warum `--radius` ohne `--world` die aktuelle Welt impliziert:** Eine
 Umkreissuche über Weltgrenzen hinweg ist inhaltlich sinnlos — dieselben
 XYZ-Koordinaten in Overworld, Nether und End haben nichts miteinander zu tun und
@@ -80,6 +103,35 @@ auf DB-Ebene greifen:
 
 `DeathsTable.worldId` ist bereits eine eigene Spalte (`DeathsTable.kt:12`), es
 sind keine Schema-Änderungen nötig.
+
+### Mitgenommener Nebenfix: doppelte Flag-Werte
+
+`withoutValueList()` (`LookupCommand.kt:110`) delegiert an
+`withValueList(null, false)` (`MapArgumentBuilder.java:171` → `:144`), wobei das
+`false` `allowValueDuplicates` ist. Beim Parsen landet jeder Wert in einem Set;
+ist er bereits enthalten, bricht der Befehl mit `"Duplicate values are not
+allowed!"` ab (`MapArgument.java:289` → `:416`).
+
+Praktische Folge: zwei Flags dürfen nicht denselben Wert tragen. Betroffen sind
+vor allem die Zahlen-Flags, die sich denselben Wertebereich teilen:
+
+```
+/death lookup --page 2 --limit 2       -> abgelehnt
+/death lookup --radius 50 --limit 50   -> abgelehnt
+```
+
+Der Fehler entsteht in der Parse-Phase, also bevor der Command-Body läuft: der
+Spieler sieht einen Brigadier-Syntaxfehler statt einer Plugin-Meldung, und die
+Tab-Completion bricht an derselben Stelle ab (`MapArgument.java:100`).
+
+Fix: `withoutValueList(true)`. Das schaltet ausschließlich die Duplikatsprüfung
+für Werte ab; doppelte **Keys** bleiben weiterhin verboten, was korrekt ist —
+eine Map kann `--page` nicht zweimal enthalten.
+
+Der Bug besteht unabhängig vom Weltfilter und trifft `--world` praktisch nie
+(Weltnamen kollidieren kaum mit Zahlen oder Spielernamen). Er wird hier
+mitgenommen, weil er in derselben Zeile sitzt, die für `--world` ohnehin
+angefasst wird — als eigener Commit.
 
 ### Anzeige
 
@@ -113,10 +165,14 @@ Test-Infrastruktur. Verifikation erfolgt über:
    - `/death lookup --radius 50` beschränkt weiterhin auf die aktuelle Welt.
    - `/death lookup --world world_nether --radius 50` sucht im Umkreis der
      eigenen Koordinaten, aber innerhalb des Nether.
+   - `/death lookup --page 2 --limit 2` wird angenommen (Nebenfix).
 
 ## Bewusst nicht enthalten
 
 - Wert-Vorschläge (Tab-Completion) für `--world`: `MapArgumentBuilder`
-  unterstützt nur eine globale Value-List für alle Keys, nicht pro Key.
+  unterstützt nur eine globale Value-List für alle Keys, nicht pro Key — und
+  diese Liste wird erzwungen, jeder nicht enthaltene Wert wird abgelehnt
+  (`MapArgument.java:282`). Weltnamen dort einzutragen würde `--player` und
+  `--limit` unbrauchbar machen. Discovery läuft daher über die Fehlermeldung.
 - Verschieben der übrigen Filter (`--time`, `--radius`, `--limit`) in die
   SQL-Query. Bestehendes Verhalten, außerhalb des Scopes dieser Änderung.
