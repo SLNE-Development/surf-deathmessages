@@ -4,6 +4,7 @@ import dev.slne.surf.api.core.util.logger
 import dev.slne.surf.api.paper.extensions.server
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.ResultRow
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.SortOrder
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.and
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.eq
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.statements.api.ExposedBlob
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.deleteWhere
@@ -32,11 +33,18 @@ object DeathRepository {
                 ?.toDeath()
         }
 
-    suspend fun findHistory(playerUuid: UUID): List<Death> =
+    suspend fun findHistory(playerUuid: UUID, worldId: UUID? = null): List<Death> =
         suspendTransaction {
+            val playerCondition = DeathsTable.playerId eq playerUuid
+            val condition = if (worldId == null) {
+                playerCondition
+            } else {
+                playerCondition.and(DeathsTable.worldId eq worldId)
+            }
+
             DeathsTable
                 .selectAll()
-                .where { DeathsTable.playerId eq playerUuid }
+                .where(condition)
                 .orderBy(DeathsTable.id, SortOrder.DESC)
                 .map { it.toDeath() }
                 .toList()
@@ -59,9 +67,12 @@ object DeathRepository {
             DeathsTable.deleteWhere { DeathsTable.deathId eq deathUuid }
         }
 
-    suspend fun findAll(amount: Int = 500): List<Death> =
+    suspend fun findAll(worldId: UUID? = null, amount: Int = 500): List<Death> =
         suspendTransaction {
+            val condition = worldId?.let { DeathsTable.worldId eq it }
+
             DeathsTable.selectAll()
+                .let { query -> if (condition == null) query else query.where(condition) }
                 .orderBy(DeathsTable.diedAt to SortOrder.DESC)
                 .limit(amount)
                 .map { it.toDeath() }

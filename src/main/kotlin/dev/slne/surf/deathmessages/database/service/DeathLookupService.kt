@@ -7,15 +7,16 @@ import kotlin.math.pow
 
 object DeathLookupService {
     suspend fun lookup(filter: DeathLookupFilter): List<Death> {
+        val worldId = filter.world?.uid
+
         val source = if (filter.playerUuid != null) {
-            DeathRepository.findHistory(filter.playerUuid)
+            DeathRepository.findHistory(filter.playerUuid, worldId)
         } else {
-            DeathRepository.findAll()
+            DeathRepository.findAll(worldId)
         }
 
         return source
             .asSequence()
-            .filter { it.location.world.name == filter.worldName }
             .filter { filter.after == null || it.diedAt.isAfter(filter.after) }
             .filter {
                 if (filter.radius == null) true

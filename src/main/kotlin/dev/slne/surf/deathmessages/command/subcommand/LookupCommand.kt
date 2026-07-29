@@ -12,6 +12,7 @@ import dev.slne.surf.api.core.messages.pagination.Pagination
 import dev.slne.surf.api.core.service.PlayerLookupService
 import dev.slne.surf.api.core.util.dateTimeFormatter
 import dev.slne.surf.api.paper.command.executors.playerExecutorSuspend
+import dev.slne.surf.api.paper.extensions.server
 import dev.slne.surf.deathmessages.command.sendDeathInfoMessage
 import dev.slne.surf.deathmessages.database.Death
 import dev.slne.surf.deathmessages.database.service.DeathLookupService
@@ -20,6 +21,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.TextDecoration
+import org.bukkit.World
 import org.bukkit.entity.Player
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -106,20 +108,25 @@ fun lookupCommand() = subcommand("lookup") {
         MapArgumentBuilder<String, String>("query", ' ')
             .withKeyMapper { it.lowercase() }
             .withValueMapper { it }
-            .withKeyList(listOf("--player", "--time", "--radius", "--page", "--limit"))
-            .withoutValueList()
+            .withKeyList(listOf("--player", "--time", "--radius", "--page", "--limit", "--world"))
+            .withoutValueList(true)
             .build()
     )
 
     playerExecutorSuspend { player, args ->
         val query: Map<String, String>? by args
 
+        val queryMap = query
+        val filter = if (queryMap == null) {
+            DeathLookupFilter.empty(player)
+        } else {
+            queryMap.parseDeathFilters(player) ?: return@playerExecutorSuspend
+        }
+        val page = queryMap?.get("--page")?.toIntOrNull() ?: 1
+
         player.sendText {
             info("Es wird nach Todes-Einträgen gesucht…")
         }
-
-        val filter = query?.parseDeathFilters(player) ?: DeathLookupFilter.empty(player)
-        val page = query?.get("--page")?.toIntOrNull() ?: 1
 
         val deaths = DeathLookupService.lookup(filter)
 
@@ -152,7 +159,10 @@ fun lookupCommand() = subcommand("lookup") {
 
 private val rangeRegex by lazy { Regex("""(\d+)([smhdw])""", RegexOption.IGNORE_CASE) }
 
-private suspend fun Map<String, String>.parseDeathFilters(player: Player): DeathLookupFilter {
+private fun resolveWorld(name: String): World? =
+    server.getWorld(name) ?: server.worlds.firstOrNull { it.name.equals(name, ignoreCase = true) }
+
+private suspend fun Map<String, String>.parseDeathFilters(player: Player): DeathLookupFilter? {
     val playerUuid = this["--player"]?.let { PlayerLookupService.getUuid(it) }
 
     val radius = (this["--radius"] ?: this["--range"])?.toDoubleOrNull()
@@ -173,6 +183,25 @@ private suspend fun Map<String, String>.parseDeathFilters(player: Player): Death
         OffsetDateTime.now().minusSeconds(seconds)
     }
 
+    val requestedWorld = this["--world"]
+    val world = when {
+        requestedWorld != null -> resolveWorld(requestedWorld) ?: run {
+            player.sendText {
+                appendErrorPrefix()
+                error("Die Welt ")
+                variableValue(requestedWorld)
+                error(" existiert nicht.")
+                appendNewline()
+                info("Verfügbare Welten: ")
+                variableValue(server.worlds.joinToString(", ") { it.name })
+            }
+            return null
+        }
+
+        radius != null -> player.world
+        else -> null
+    }
+
     return DeathLookupFilter(
         playerUuid = playerUuid,
         after = after,
@@ -180,7 +209,7 @@ private suspend fun Map<String, String>.parseDeathFilters(player: Player): Death
         centerX = player.location.x,
         centerY = player.location.y,
         centerZ = player.location.z,
-        worldName = player.world.name,
+        world = world,
         limit = this["--limit"]?.toIntOrNull() ?: 50
     )
 }
@@ -192,14 +221,14 @@ data class DeathLookupFilter(
     val centerX: Double,
     val centerY: Double,
     val centerZ: Double,
-    val worldName: String,
+    val world: World?,
     val limit: Int
 ) {
     companion object {
         fun empty(player: Player) = DeathLookupFilter(
             null, null, null,
             player.location.x, player.location.y, player.location.z,
-            player.world.name, 50
+            null, 50
         )
     }
 }
