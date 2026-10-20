@@ -19,7 +19,7 @@ surfPaperPluginApi {
     foliaSupported(true)
 
     withCorePaper()
-    withSurfDatabaseR2dbc("2.3.1", "dev.slne.surf.deathmessages.libs")
+    withSurfDatabaseR2dbc("2.3.5", "dev.slne.surf.deathmessages.libs")
 
     serverDependencies {
         registerSoft("surf-settings-paper")
