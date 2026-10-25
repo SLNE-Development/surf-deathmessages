@@ -3,22 +3,21 @@ package dev.slne.surf.deathmessages.command
 import dev.jorel.commandapi.kotlindsl.commandAPICommand
 import dev.slne.surf.api.core.messages.Colors
 import dev.slne.surf.api.core.messages.adventure.buildText
+import dev.slne.surf.api.core.messages.adventure.plain
 import dev.slne.surf.api.core.messages.adventure.sendText
 import dev.slne.surf.api.core.messages.builder.SurfComponentBuilder
 import dev.slne.surf.api.core.util.dateTimeFormatter
-import dev.slne.surf.api.paper.inventory.framework.viewFrame
 import dev.slne.surf.deathmessages.command.subcommand.findDeathByIdCommand
+import dev.slne.surf.deathmessages.command.subcommand.inventoryCommand
 import dev.slne.surf.deathmessages.command.subcommand.lastDeathCommand
 import dev.slne.surf.deathmessages.command.subcommand.lookupCommand
 import dev.slne.surf.deathmessages.database.Death
-import dev.slne.surf.deathmessages.gui.DeathHistoryView
 import dev.slne.surf.deathmessages.permissions.PermissionList
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.event.HoverEvent
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Location
 import org.bukkit.command.CommandSender
-import org.bukkit.entity.Player
+
+private const val UNKNOWN = "#Unbekannt"
 
 fun deathCommand() = commandAPICommand("death") {
     withPermission(PermissionList.PLAYER_DEATH_GENERIC_COMMAND)
@@ -26,100 +25,87 @@ fun deathCommand() = commandAPICommand("death") {
     withSubcommand(lastDeathCommand())
     withSubcommand(findDeathByIdCommand())
     withSubcommand(lookupCommand())
-}
-
-
-private fun SurfComponentBuilder.appendCopyable(
-    label: String,
-    value: Any?,
-    description: String
-) {
-    val displayValue = value?.toString() ?: "#Unbekannt"
-
-    val rawText = if (value is Component) {
-        PlainTextComponentSerializer.plainText().serialize(value)
-    } else {
-        displayValue
-    }
-
-    info("$label: ")
-    append(
-        buildText {
-            if (value is Component) append(value.colorIfAbsent(Colors.VARIABLE_VALUE)) else variableValue(
-                displayValue
-            )
-        }
-            .clickEvent(ClickEvent.copyToClipboard(rawText))
-            .hoverEvent(HoverEvent.showText(buildText {
-                info("Klicke, um $description")
-                appendSpace()
-                variableValue(rawText)
-                appendSpace()
-                info("zu kopieren.")
-            }))
-    )
+    withSubcommand(inventoryCommand())
 }
 
 fun CommandSender.sendDeathInfoMessage(death: Death, lastDeath: Boolean = false) = sendText {
-    val playerName = server.getOfflinePlayer(death.playerUuid).name ?: "#Unbekannt"
+    val location = death.location
+    val playerName = server.getOfflinePlayer(death.playerUuid).name ?: UNKNOWN
 
     appendInfoPrefix()
     spacer("-".repeat(30))
 
     appendNewInfoPrefixedLine()
-    if (lastDeath) {
-        appendCopyable("Letzter Tod von", playerName, "den Namen")
-    } else {
-        appendCopyable("Tod von", playerName, "den Namen")
-    }
-
-    val diedAtFormatted = dateTimeFormatter.format(death.diedAt)
-    appendNewInfoPrefixedLine()
-    appendCopyable("Zeitpunkt", diedAtFormatted, "den Zeitpunkt")
-
-    val worldName = death.location.world?.name ?: "#Unbekannt"
-    appendNewInfoPrefixedLine()
-    appendCopyable("Welt", worldName, "den Weltnamen")
-
-    val cords = "${death.location.blockX} ${death.location.blockY} ${death.location.blockZ}"
-    appendNewInfoPrefixedLine()
-    appendCopyable("Koordinaten", cords, "die Koordinaten")
-
-    val deathId = death.deathUuid.toString()
-    appendNewInfoPrefixedLine()
-    appendCopyable("Todes-ID", deathId, "die Todes-ID")
-
-    val deathReason = death.reason ?: buildText { spacer("Todesursache unbekannt") }
-    appendNewInfoPrefixedLine()
-    appendCopyable("Todesursache", deathReason, "die Todesursache")
+    appendCopyable(if (lastDeath) "Letzter Tod von" else "Tod von", playerName, "den Namen")
 
     appendNewInfoPrefixedLine()
-    append(
-        buildText { spacer("[Zu Todesort teleportieren]") }
-            .clickEvent(ClickEvent.callback { audience ->
-                val player = audience as? Player ?: return@callback
-                player.teleportAsync(death.location)
-                player.sendText {
-                    appendSuccessPrefix()
-                    success("Du wurdest zum Todesort teleportiert.")
-                }
-            })
-            .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
+    appendCopyable("Zeitpunkt", dateTimeFormatter.format(death.diedAt), "den Zeitpunkt")
+
+    appendNewInfoPrefixedLine()
+    appendCopyable("Welt", location.world?.name ?: UNKNOWN, "den Weltnamen")
+
+    appendNewInfoPrefixedLine()
+    appendCopyable("Koordinaten", "${location.blockX} ${location.blockY} ${location.blockZ}", "die Koordinaten")
+
+    appendNewInfoPrefixedLine()
+    appendCopyable("Todes-ID", death.deathUuid.toString(), "die Todes-ID")
+
+    appendNewInfoPrefixedLine()
+    appendCopyable(
+        "Todesursache",
+        death.reason ?: buildText { spacer("Todesursache unbekannt") },
+        "die Todesursache"
+    )
+
+    appendNewInfoPrefixedLine()
+    appendCommandButton(
+        "[Zu Todesort teleportieren]",
+        location.toTeleportCommand(),
+        "Klicke um dich zum Todesort zu teleportieren."
     )
     appendSpace()
-    append(
-        buildText { spacer("[Inventar ansehen]") }
-            .clickEvent(ClickEvent.callback { audience ->
-                val player = audience as? Player ?: return@callback
-                viewFrame.open(
-                    DeathHistoryView::class.java,
-                    player,
-                    mapOf("death" to death)
-                )
-            })
-            .hoverEvent(HoverEvent.showText(buildText { info("Klicke um dich zum Todesort zu teleportieren.") }))
+    appendCommandButton(
+        "[Inventar ansehen]",
+        "/death inventory ${death.deathUuid}",
+        "Klicke um das Inventar anzusehen."
     )
 
     appendNewInfoPrefixedLine()
     spacer("-".repeat(30))
+}
+
+private fun SurfComponentBuilder.appendCopyable(label: String, value: String, description: String) =
+    appendCopyable(label, buildText { variableValue(value) }, description)
+
+private fun SurfComponentBuilder.appendCopyable(label: String, value: Component, description: String) {
+    val rawText = value.plain()
+
+    info("$label: ")
+    append(buildText {
+        append(value.colorIfAbsent(Colors.VARIABLE_VALUE))
+
+        clickCopiesToClipboard(rawText)
+        hoverEvent(buildText {
+            info("Klicke, um $description")
+            appendSpace()
+            variableValue(rawText)
+            appendSpace()
+            info("zu kopieren.")
+        })
+    })
+}
+
+private fun SurfComponentBuilder.appendCommandButton(label: String, command: String, hint: String) {
+    append(buildText {
+        spacer(label)
+
+        clickRunsCommand(command)
+        hoverEvent(buildText { info(hint) })
+    })
+}
+
+private fun Location.toTeleportCommand(): String {
+    val tp = "/tp $x $y $z"
+    val world = world ?: return tp
+    return "$tp ${world.key.asString()}"
 }
