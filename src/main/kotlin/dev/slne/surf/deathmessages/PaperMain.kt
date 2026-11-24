@@ -30,7 +30,7 @@ class PaperMain : SuspendingJavaPlugin() {
         databaseLoader.disconnect()
     }
 
-    val hasSettingsHook get() = pluginManager.isPluginEnabled("surf-settings-paper")
+    val hasSettingsHook get() = pluginManager.isPluginEnabled("surf-player-paper")
 }
 
 fun SurfComponentBuilder.appendBullet() {

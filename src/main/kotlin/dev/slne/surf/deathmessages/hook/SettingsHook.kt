@@ -1,7 +1,7 @@
 package dev.slne.surf.deathmessages.hook
 
-import dev.slne.surf.settings.api.SurfSettingsApi
-import dev.slne.surf.settings.api.setting.SettingKeys
+import dev.slne.surf.player.api.settings.SurfSettingsApi
+import dev.slne.surf.player.api.settings.setting.SettingKeys
 import java.util.*
 
 object SettingsHook {

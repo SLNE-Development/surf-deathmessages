@@ -8,7 +8,7 @@ group = "dev.slne.surf.deathmessages"
 version = "1.1.12"
 
 dependencies {
-    compileOnly("dev.slne.surf.settings:surf-settings-api:+")
+    compileOnly("dev.slne.surf.player:surf-player-api:1.0.3")
 }
 
 surfPaperPluginApi {
@@ -22,6 +22,6 @@ surfPaperPluginApi {
     withSurfDatabaseR2dbc("2.3.5", "dev.slne.surf.deathmessages.libs")
 
     serverDependencies {
-        registerSoft("surf-settings-paper")
+        registerSoft("surf-player-paper")
     }
 }
